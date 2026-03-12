@@ -1,0 +1,154 @@
+---
+const { title, description, image, tags, url, embed } = Astro.props;
+---
+
+<article class="project-card">
+  {embed ? (
+    <button type="button" class="project-card__link project-card__popover-trigger">
+      <img src={image} alt="" class="project-card__image" loading="lazy" />
+      <div class="project-card__content">
+        <h2 class="project-card__title">{title}</h2>
+        <p class="project-card__description">{description}</p>
+      </div>
+    </button>
+  ) : (
+    <a href={url} class="project-card__link">
+      <img src={image} alt="" class="project-card__image" loading="lazy" />
+      <div class="project-card__content">
+        <h2 class="project-card__title">{title}</h2>
+        <p class="project-card__description">{description}</p>
+      </div>
+    </a>
+  )}
+</article>
+
+{embed && (
+  <dialog class="video-dialog">
+    <div class="video-dialog__inner">
+      <button type="button" class="video-dialog__close" aria-label="Close video">&times;</button>
+      <div class="video-dialog__embed" set:html={embed} />
+    </div>
+  </dialog>
+)}
+
+<style>
+  .project-card {
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+    text-align: center;
+  }
+
+  .project-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+
+  .project-card__link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .project-card__image {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+
+  .project-card__content {
+    padding: var(--space-md);
+  }
+
+  .project-card__title {
+    font-size: 1.125rem;
+    margin-bottom: var(--space-xs);
+  }
+
+  .project-card__description {
+    color: var(--color-muted);
+    font-size: 0.9375rem;
+    margin-bottom: var(--space-sm);
+  }
+
+  .project-card__popover-trigger {
+    background: none;
+    border: none;
+    font: inherit;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+  }
+
+  .video-dialog {
+    border: none;
+    background: transparent;
+    padding: 0;
+    width: 90vw;
+    max-width: 800px;
+    margin: 5vh auto 0;
+    overflow: visible;
+  }
+
+  .video-dialog::backdrop {
+    background: transparent;
+  }
+
+  .video-dialog__inner {
+    position: relative;
+    background: #000;
+    border-radius: 0.75rem;
+    padding: 2.5rem 0.5rem;
+  }
+
+  .video-dialog__embed {
+    border-radius: 0.375rem;
+    overflow: hidden;
+  }
+
+  .video-dialog__close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.875rem;
+    z-index: 1;
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .video-dialog__close:hover {
+    color: #fff;
+  }
+</style>
+
+<script>
+  document.querySelectorAll('.project-card__popover-trigger').forEach(btn => {
+    const dialog = btn.closest('.project-card').nextElementSibling;
+    if (!(dialog instanceof HTMLDialogElement)) return;
+
+    const embedDiv = dialog.querySelector('.video-dialog__embed > div');
+    if (embedDiv) embedDiv.style.padding = '56.25% 0 0 0';
+
+    btn.addEventListener('click', () => {
+      dialog.showModal();
+    });
+
+    dialog.querySelector('.video-dialog__close').addEventListener('click', () => {
+      const iframe = dialog.querySelector('iframe');
+      if (iframe) iframe.src = iframe.src;
+      dialog.close();
+    });
+
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) {
+        const iframe = dialog.querySelector('iframe');
+        if (iframe) iframe.src = iframe.src;
+        dialog.close();
+      }
+    });
+  });
+</script>

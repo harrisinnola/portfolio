@@ -1,0 +1,604 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Lineage" description="An interactive journey through 4 billion years of evolution.">
+  <div class="lineage-app" id="lineage-app">
+    <div class="intro-gate" id="intro-gate">
+      <div class="intro-content">
+        <h1 class="intro-title">Lineage</h1>
+        <p class="intro-subtitle">4.1 billion years of evolution</p>
+        <p class="intro-desc">An interactive journey from alkaline vents to modern humans.</p>
+        <button class="intro-enter" id="intro-enter">Begin</button>
+      </div>
+    </div>
+
+    <div class="experience" id="experience" style="display:none;">
+      <div class="scene-stage" id="scene-stage">
+        <div class="scene-bg" id="scene-bg"></div>
+        <div class="scene-subject" id="scene-subject"></div>
+        <div class="scene-info" id="scene-info">
+          <span class="confidence-badge" id="confidence-badge"></span>
+          <span class="scale-badge" id="scale-badge"></span>
+          <h2 class="scene-title" id="scene-title"></h2>
+          <p class="scene-date" id="scene-date"></p>
+          <p class="scene-rep" id="scene-rep"></p>
+          <p class="scene-why" id="scene-why"></p>
+        </div>
+      </div>
+
+      <div class="timeline-bar" id="timeline-bar">
+        <div class="timeline-line"></div>
+        <div class="timeline-track" id="timeline-track"></div>
+      </div>
+
+      <a href="/experiments/" class="lineage-back" id="lineage-back">&larr; Back</a>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .lineage-app {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    font-family: var(--font-body);
+    background: #0a0a0f;
+    color: #fff;
+  }
+
+  /* Intro gate */
+  .intro-gate {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0a0a0f;
+    z-index: 100;
+    transition: opacity 0.8s ease;
+  }
+
+  .intro-gate.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .intro-content {
+    text-align: center;
+    max-width: 500px;
+    padding: 2rem;
+  }
+
+  .intro-title {
+    font-size: 3.5rem;
+    font-weight: 200;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.5rem;
+    color: #fff;
+  }
+
+  .intro-subtitle {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.08em;
+    font-weight: 200;
+    margin-bottom: 2rem;
+  }
+
+  .intro-desc {
+    font-size: 0.9375rem;
+    color: rgba(255,255,255,0.5);
+    font-weight: 200;
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+  }
+
+  .intro-enter {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 200;
+    letter-spacing: 0.08em;
+    padding: 0.75rem 2.5rem;
+    cursor: pointer;
+    border-radius: 2rem;
+    transition: border-color 0.3s, background 0.3s;
+  }
+
+  .intro-enter:hover {
+    border-color: rgba(255,255,255,0.6);
+    background: rgba(255,255,255,0.05);
+  }
+
+  /* Experience */
+  .experience {
+    position: absolute;
+    inset: 0;
+  }
+
+  .scene-stage {
+    position: absolute;
+    inset: 0;
+    bottom: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .scene-bg {
+    position: absolute;
+    inset: 0;
+    transition: background 1s ease;
+  }
+
+  .scene-subject {
+    position: relative;
+    z-index: 1;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.6s ease, opacity 0.6s ease;
+  }
+
+  .scene-subject svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .scene-info {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: 600px;
+    padding: 1.5rem 2rem;
+    transition: opacity 0.5s ease;
+  }
+
+  .scene-title {
+    font-size: 1.75rem;
+    font-weight: 200;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.25rem;
+    color: #fff;
+  }
+
+  .scene-date {
+    font-size: 0.8125rem;
+    color: rgba(255,255,255,0.4);
+    font-weight: 200;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.75rem;
+  }
+
+  .scene-rep {
+    font-size: 0.875rem;
+    color: rgba(255,255,255,0.5);
+    font-style: italic;
+    margin-bottom: 0.75rem;
+  }
+
+  .scene-why {
+    font-size: 0.875rem;
+    color: rgba(255,255,255,0.55);
+    font-weight: 200;
+    line-height: 1.6;
+    margin-bottom: 0;
+  }
+
+  .confidence-badge {
+    display: inline-block;
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 1rem;
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 0.75rem;
+    text-transform: lowercase;
+  }
+
+  .scale-badge {
+    display: inline-block;
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 1rem;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 0.75rem;
+    margin-left: 0.5rem;
+    font-family: var(--font-mono);
+  }
+
+  /* Timeline */
+  .timeline-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: rgba(0,0,0,0.6);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    z-index: 10;
+    cursor: grab;
+    user-select: none;
+  }
+
+  .timeline-bar.dragging {
+    cursor: grabbing;
+  }
+
+  .timeline-line {
+    position: absolute;
+    top: 22px;
+    left: 2rem;
+    right: 2rem;
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+  }
+
+  .timeline-track {
+    position: absolute;
+    top: 0;
+    left: 2rem;
+    right: 2rem;
+    height: 100%;
+  }
+
+  .timeline-node {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translateX(-50%);
+    cursor: pointer;
+    padding-top: 14px;
+  }
+
+  .timeline-node-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.15);
+    transition: background 0.3s, transform 0.3s, border-color 0.3s;
+  }
+
+  .timeline-node:hover .timeline-node-dot {
+    background: rgba(255,255,255,0.4);
+    transform: scale(1.4);
+  }
+
+  .timeline-node.active .timeline-node-dot {
+    background: #fff;
+    border-color: #fff;
+    transform: scale(1.5);
+  }
+
+  .timeline-node-label {
+    font-size: 0.5rem;
+    color: rgba(255,255,255,0);
+    letter-spacing: 0.02em;
+    margin-top: 5px;
+    text-align: center;
+    line-height: 1.2;
+    transition: color 0.3s;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .timeline-node.active .timeline-node-label {
+    color: rgba(255,255,255,0.5);
+  }
+
+  .timeline-node:hover .timeline-node-label {
+    color: rgba(255,255,255,0.4);
+  }
+
+  .lineage-back {
+    position: absolute;
+    top: 1rem;
+    left: 1.5rem;
+    z-index: 20;
+    font-size: 0.8125rem;
+    color: rgba(255,255,255,0.35);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+
+  .lineage-back:hover {
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+  }
+
+  @media (max-width: 640px) {
+    .scene-title { font-size: 1.375rem; }
+    .scene-info { padding: 1rem; }
+    .scene-subject { width: 140px; height: 140px; }
+    .nav-prev { left: 0.75rem; }
+    .nav-next { right: 0.75rem; }
+    .nav-arrow { width: 2.5rem; height: 2.5rem; font-size: 1rem; }
+    .timeline-bar { padding: 0 1rem; }
+    .intro-title { font-size: 2.5rem; }
+  }
+</style>
+
+<script>
+  const waypoints = [
+    { id:"alkaline_vents", title:"Alkaline hydrothermal vents", years_ago:4100000000, display_age:"ca. 4.1 billion years ago", representative:"Lost City style vent field", type:"environmental event", confidence:"speculative", approx_size_m:30, why:"A leading origin-of-life hypothesis places prebiotic chemistry in porous alkaline vent systems that supplied chemical gradients, mineral surfaces, and compartment-like spaces.", magnified:false, palette:["#1a0800","#3d1800","#6b3a1a"] },
+    { id:"protocell_pores", title:"Protocell-like compartments", years_ago:4000000000, display_age:"ca. 4.0 billion years ago", representative:"mineral micropores and membrane-like bubbles", type:"precellular transition", confidence:"highly speculative", approx_size_m:5e-5, why:"Before true cells, chemistry may have been concentrated inside mineral pores or primitive membrane compartments that stabilized reactions.", magnified:true, palette:["#0d0a1a","#1a1233","#2a1f4d"] },
+    { id:"luca_grade_microbe", title:"First cells / LUCA-grade microbe", years_ago:3900000000, display_age:"older than 3.9 billion years ago", representative:"anaerobic microbe", type:"microbial ancestor", confidence:"inferred from phylogeny", approx_size_m:2e-6, why:"The last universal common ancestor marks the point after which all known life shares a common biological inheritance.", magnified:true, palette:["#0a0f1a","#0f1a2d","#1a2d47"] },
+    { id:"cyanobacteria", title:"Cyanobacterial mats", years_ago:2700000000, display_age:"ca. 2.7 billion years ago", representative:"cyanobacteria / stromatolite builders", type:"microbial innovation", confidence:"well-supported", approx_size_m:1e-5, why:"Oxygenic photosynthesis by cyanobacteria helped transform Earth's atmosphere and oceans.", magnified:false, palette:["#0a1a0f","#0f2d1a","#1a4729"] },
+    { id:"great_oxidation", title:"Great Oxidation Event", years_ago:2400000000, display_age:"2.4 to 2.2 billion years ago", representative:"oxygenated shallow seas", type:"planetary transition", confidence:"well-supported", approx_size_m:1000, why:"Atmospheric oxygen rose for the first time at planetary scale, opening ecological space for new metabolisms and later complexity.", magnified:false, palette:["#0a1520","#0f2540","#1a3d5c"] },
+    { id:"first_eukaryotes", title:"First eukaryotes", years_ago:1800000000, display_age:"ca. 1.8 billion years ago", representative:"complex cell with organelles", type:"cellular transition", confidence:"well-supported", approx_size_m:5e-5, why:"Eukaryotic cells introduced internal compartmentalization and, eventually, the lineage that led to animals, plants, and fungi.", magnified:true, palette:["#1a0d1a","#2d1a2d","#472a47"] },
+    { id:"multicellular_eukaryotes", title:"Complex multicellular eukaryotes", years_ago:1000000000, display_age:"ca. 1.0 billion years ago", representative:"multicellular algae", type:"multicellularity transition", confidence:"well-supported", approx_size_m:0.01, why:"Large multicellular bodies and cellular differentiation emerged long before animals appeared.", magnified:false, palette:["#0a1a12","#0f2d1f","#1a4730"] },
+    { id:"ediacaran_animals", title:"Ediacaran animals", years_ago:575000000, display_age:"ca. 575 million years ago", representative:"soft-bodied Ediacaran organism", type:"early animals", confidence:"fossil-supported", approx_size_m:0.2, why:"The Ediacaran world preserves the earliest large, complex organisms and the first clear rise of animal-grade ecosystems.", magnified:false, palette:["#0f0d1a","#1a1533","#2d2355"] },
+    { id:"bilaterian_animals", title:"Bilaterian animals", years_ago:550000000, display_age:"ca. 550 million years ago", representative:"wormlike bilateral animal", type:"body-plan transition", confidence:"inferred", approx_size_m:0.02, why:"Bilaterian body plans set up the left-right symmetry, front-back axes, and organ systems behind most later animals, including us.", magnified:false, palette:["#12100d","#24201a","#3d3528"] },
+    { id:"jawless_vertebrates", title:"Jawless vertebrates", years_ago:500000000, display_age:"about 500 million years ago", representative:"ostracoderm-like fish", type:"vertebrate origin", confidence:"well-supported", approx_size_m:0.3, why:"Early vertebrates established the basic vertebrate body plan: head, braincase, backbone, and sensory systems.", magnified:false, palette:["#0d1218","#1a2530","#283d50"] },
+    { id:"jawed_fishes", title:"Jawed fishes", years_ago:420000000, display_age:"ca. 420 million years ago", representative:"placoderm-like fish", type:"vertebrate innovation", confidence:"well-supported", approx_size_m:1, why:"Jaws transformed feeding and predation, and jawed vertebrates became the ancestors of bony fishes, sharks, and eventually tetrapods.", magnified:false, palette:["#0d1515","#1a2d2d","#284747"] },
+    { id:"lobe_finned_fishes", title:"Lobe-finned fishes", years_ago:390000000, display_age:"ca. 390 million years ago", representative:"early sarcopterygian", type:"tetrapod stem", confidence:"well-supported", approx_size_m:1.2, why:"Our lineage runs through lobe-finned fishes, whose robust fins provided the anatomical basis for later limbs.", magnified:false, palette:["#0f1510","#1a2d1f","#284730"] },
+    { id:"stem_tetrapods", title:"Stem tetrapods", years_ago:375000000, display_age:"ca. 375 million years ago", representative:"Tiktaalik-like transitional fish", type:"water-to-land transition", confidence:"well-supported", approx_size_m:2, why:"Stem tetrapods combined fish and tetrapod traits, including stronger girdles, mobile neck regions, and limb-like fins.", magnified:false, palette:["#15120d","#2d251a","#473d28"] },
+    { id:"early_tetrapods", title:"Early tetrapods", years_ago:365000000, display_age:"ca. 365 million years ago", representative:"Acanthostega-like animal", type:"land-capable vertebrate", confidence:"well-supported", approx_size_m:1.5, why:"Limbed vertebrates became capable of moving through shallow water and onto land, starting the terrestrial vertebrate story.", magnified:false, palette:["#12150d","#252d1a","#3d4728"] },
+    { id:"amniotes", title:"Amniotes", years_ago:320000000, display_age:"ca. 320 million years ago", representative:"small Hylonomus-like amniote", type:"reproductive transition", confidence:"well-supported", approx_size_m:0.2, why:"Amniotes reproduced away from open water using protected eggs and associated membranes, freeing vertebrates from aquatic breeding.", magnified:false, palette:["#150f0d","#2d1f1a","#473228"] },
+    { id:"synapsids", title:"Synapsids", years_ago:300000000, display_age:"ca. 300 million years ago", representative:"Dimetrodon-like synapsid", type:"mammal-line ancestor", confidence:"well-supported", approx_size_m:3, why:"Synapsids are the amniote branch that ultimately gave rise to mammals, including humans.", magnified:false, palette:["#1a0f0a","#331f15","#4d3020"] },
+    { id:"cynodonts", title:"Cynodonts", years_ago:240000000, display_age:"ca. 240 million years ago", representative:"Thrinaxodon-like cynodont", type:"mammalian transition", confidence:"well-supported", approx_size_m:0.5, why:"Cynodonts show many mammal-leaning traits, including differentiated teeth and jaw-ear transitions on the path toward true mammals.", magnified:false, palette:["#15100d","#2d221a","#473828"] },
+    { id:"early_mammals", title:"Early mammals", years_ago:225000000, display_age:"225 to 205 million years ago", representative:"Morganucodon-like mammal", type:"true mammals", confidence:"well-supported", approx_size_m:0.12, why:"The earliest mammals were small but they established the body plan and physiology that would eventually produce primates and humans.", magnified:false, palette:["#0d1015","#1a222d","#283847"] },
+    { id:"early_primates", title:"Early primates", years_ago:56000000, display_age:"56 to 65 million years ago", representative:"Plesiadapis-like early primate", type:"primate origin", confidence:"well-supported", approx_size_m:0.4, why:"Early primates adapted to arboreal life with grasping hands, flexible shoulders, and visual specialization that set the stage for apes and humans.", magnified:false, palette:["#0d150f","#1a2d20","#284733"] },
+    { id:"early_apes", title:"Early apes", years_ago:18000000, display_age:"ca. 18 million years ago", representative:"Proconsul-like ape", type:"ape lineage", confidence:"well-supported", approx_size_m:0.7, why:"Miocene apes represent the branch from which African apes and, much later, humans emerged.", magnified:false, palette:["#12150d","#252d1a","#3d4728"] },
+    { id:"earliest_hominins", title:"Earliest hominins", years_ago:6500000, display_age:"7 to 6 million years ago", representative:"Sahelanthropus-like hominin", type:"human-line split", confidence:"incomplete fossil record", approx_size_m:1.1, why:"This marks the human lineage after the split from the lineage leading to chimpanzees and bonobos.", magnified:false, palette:["#15120a","#2d2515","#4d3d22"] },
+    { id:"australopithecus_afarensis", title:"Australopithecus afarensis", years_ago:3400000, display_age:"3.85 to 2.95 million years ago", representative:"Lucy's species", type:"bipedal hominin", confidence:"well-supported", approx_size_m:1.2, why:"A. afarensis combined habitual bipedalism with retained climbing traits and is one of the clearest early human waypoints.", magnified:false, palette:["#1a150d","#332a1a","#4d4028"] },
+    { id:"homo_habilis", title:"Homo habilis", years_ago:2000000, display_age:"2.4 to 1.4 million years ago", representative:"early Homo", type:"genus Homo", confidence:"well-supported", approx_size_m:1.3, why:"Early Homo shows a larger braincase and a more human-like face than australopiths and is closely associated with early stone tool use.", magnified:false, palette:["#15100a","#2d2215","#4d3822"] },
+    { id:"homo_erectus", title:"Homo erectus", years_ago:1600000, display_age:"1.89 Ma to 110 ka", representative:"globetrotting early human", type:"modern-bodied hominin", confidence:"well-supported", approx_size_m:1.7, why:"H. erectus had more modern body proportions, traveled beyond Africa, and represents a major shift toward the human body plan.", magnified:false, palette:["#120d0a","#251a15","#3d2d22"] },
+    { id:"homo_sapiens", title:"Homo sapiens", years_ago:300000, display_age:"at least 300,000 years ago to present", representative:"modern humans", type:"our species", confidence:"well-supported", approx_size_m:1.75, why:"Our species emerged in Africa roughly 300,000 years ago and later spread worldwide, carrying cumulative culture, language, art, and technology.", magnified:false, palette:["#0f0f15","#1a1a2d","#2d2d47"] },
+  ];
+
+  // Silhouette SVG generators per type
+  function makeSilhouette(wp, size) {
+    const s = size;
+    const c = s / 2;
+    const col = wp.palette[2];
+
+    const shapes = {
+      "environmental event": `<circle cx="${c}" cy="${c}" r="${c*0.4}" fill="none" stroke="${col}" stroke-width="1.5" opacity="0.6"/><circle cx="${c}" cy="${c*0.7}" r="${c*0.15}" fill="${col}" opacity="0.3"/><line x1="${c}" y1="${c*0.3}" x2="${c}" y2="${c*1.5}" stroke="${col}" stroke-width="1" opacity="0.4"/><line x1="${c*0.7}" y1="${c*0.5}" x2="${c*0.7}" y2="${c*1.6}" stroke="${col}" stroke-width="0.8" opacity="0.3"/><line x1="${c*1.3}" y1="${c*0.4}" x2="${c*1.3}" y2="${c*1.4}" stroke="${col}" stroke-width="0.8" opacity="0.3"/>`,
+      "precellular transition": `<circle cx="${c}" cy="${c}" r="${c*0.35}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c*0.8}" cy="${c*0.9}" r="${c*0.08}" fill="${col}" opacity="0.3"/><circle cx="${c*1.15}" cy="${c*1.1}" r="${c*0.06}" fill="${col}" opacity="0.25"/>`,
+      "microbial ancestor": `<ellipse cx="${c}" cy="${c}" rx="${c*0.3}" ry="${c*0.2}" fill="${col}" opacity="0.2" stroke="${col}" stroke-width="1" stroke-opacity="0.5"/><circle cx="${c*0.85}" cy="${c}" r="${c*0.05}" fill="${col}" opacity="0.4"/>`,
+      "microbial innovation": `<ellipse cx="${c}" cy="${c*1.1}" rx="${c*0.5}" ry="${c*0.15}" fill="${col}" opacity="0.2"/><ellipse cx="${c}" cy="${c*0.9}" rx="${c*0.45}" ry="${c*0.12}" fill="${col}" opacity="0.15"/><ellipse cx="${c}" cy="${c*0.7}" rx="${c*0.35}" ry="${c*0.1}" fill="${col}" opacity="0.1"/>`,
+      "planetary transition": `<circle cx="${c}" cy="${c}" r="${c*0.45}" fill="none" stroke="${col}" stroke-width="1.5" opacity="0.3"/><path d="M${c*0.3},${c} Q${c},${c*0.5} ${c*1.7},${c}" fill="none" stroke="${col}" stroke-width="1" opacity="0.4"/>`,
+      "cellular transition": `<circle cx="${c}" cy="${c}" r="${c*0.35}" fill="${col}" opacity="0.12" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c}" cy="${c}" r="${c*0.12}" fill="${col}" opacity="0.2" stroke="${col}" stroke-width="0.5" stroke-opacity="0.3"/><circle cx="${c*0.8}" cy="${c*0.85}" r="${c*0.05}" fill="${col}" opacity="0.35"/>`,
+      "multicellularity transition": `<ellipse cx="${c}" cy="${c}" rx="${c*0.15}" ry="${c*0.4}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4" transform="rotate(-10,${c},${c})"/>`,
+      "early animals": `<ellipse cx="${c}" cy="${c}" rx="${c*0.2}" ry="${c*0.4}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><line x1="${c}" y1="${c*0.5}" x2="${c*0.7}" y2="${c*0.3}" stroke="${col}" stroke-width="0.8" opacity="0.3"/>`,
+      "body-plan transition": `<ellipse cx="${c}" cy="${c}" rx="${c*0.4}" ry="${c*0.1}" fill="${col}" opacity="0.2" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/>`,
+      "vertebrate origin": `<ellipse cx="${c}" cy="${c}" rx="${c*0.35}" ry="${c*0.15}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c*0.65}" cy="${c}" r="${c*0.04}" fill="${col}" opacity="0.5"/>`,
+      "vertebrate innovation": `<ellipse cx="${c}" cy="${c}" rx="${c*0.38}" ry="${c*0.18}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1.2" stroke-opacity="0.4"/><path d="M${c*0.6},${c} L${c*0.5},${c*0.92}" stroke="${col}" stroke-width="1" opacity="0.4"/>`,
+      "tetrapod stem": `<ellipse cx="${c}" cy="${c*0.95}" rx="${c*0.35}" ry="${c*0.15}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><line x1="${c*0.75}" y1="${c*1.1}" x2="${c*0.6}" y2="${c*1.3}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><line x1="${c*1.25}" y1="${c*1.1}" x2="${c*1.4}" y2="${c*1.3}" stroke="${col}" stroke-width="1.5" opacity="0.3"/>`,
+      "water-to-land transition": `<ellipse cx="${c}" cy="${c*0.9}" rx="${c*0.35}" ry="${c*0.15}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><line x1="${c*0.7}" y1="${c*1.05}" x2="${c*0.55}" y2="${c*1.3}" stroke="${col}" stroke-width="2" opacity="0.3"/><line x1="${c*1.3}" y1="${c*1.05}" x2="${c*1.45}" y2="${c*1.3}" stroke="${col}" stroke-width="2" opacity="0.3"/>`,
+      "land-capable vertebrate": `<ellipse cx="${c}" cy="${c*0.85}" rx="${c*0.3}" ry="${c*0.15}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><line x1="${c*0.7}" y1="${c}" x2="${c*0.55}" y2="${c*1.25}" stroke="${col}" stroke-width="2" opacity="0.3"/><line x1="${c*1.3}" y1="${c}" x2="${c*1.45}" y2="${c*1.25}" stroke="${col}" stroke-width="2" opacity="0.3"/>`,
+      "reproductive transition": `<ellipse cx="${c}" cy="${c*0.9}" rx="${c*0.2}" ry="${c*0.12}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><line x1="${c*0.85}" y1="${c*1.02}" x2="${c*0.75}" y2="${c*1.2}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><line x1="${c*1.15}" y1="${c*1.02}" x2="${c*1.25}" y2="${c*1.2}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><ellipse cx="${c*1.4}" cy="${c*1.15}" rx="${c*0.06}" ry="${c*0.05}" fill="${col}" opacity="0.2"/>`,
+      "mammal-line ancestor": `<ellipse cx="${c}" cy="${c*0.85}" rx="${c*0.35}" ry="${c*0.18}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1.2" stroke-opacity="0.4"/><path d="M${c*0.65},${c*0.68} Q${c*0.65},${c*0.4} ${c*0.75},${c*0.35} Q${c*1.35},${c*0.35} ${c*1.35},${c*0.68}" fill="none" stroke="${col}" stroke-width="1" opacity="0.3"/>`,
+      "mammalian transition": `<ellipse cx="${c}" cy="${c*0.9}" rx="${c*0.25}" ry="${c*0.15}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c*0.7}" cy="${c*0.78}" r="${c*0.08}" fill="${col}" opacity="0.12" stroke="${col}" stroke-width="0.8" stroke-opacity="0.3"/>`,
+      "true mammals": `<ellipse cx="${c}" cy="${c*0.9}" rx="${c*0.18}" ry="${c*0.1}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c*0.82}" cy="${c*0.82}" r="${c*0.06}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="0.8" stroke-opacity="0.3"/>`,
+      "primate origin": `<ellipse cx="${c}" cy="${c*0.95}" rx="${c*0.15}" ry="${c*0.2}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c}" cy="${c*0.7}" r="${c*0.1}" fill="${col}" opacity="0.12" stroke="${col}" stroke-width="0.8" stroke-opacity="0.3"/><line x1="${c*0.88}" y1="${c*0.85}" x2="${c*0.7}" y2="${c*1}" stroke="${col}" stroke-width="1.2" opacity="0.3"/><line x1="${c*1.12}" y1="${c*0.85}" x2="${c*1.3}" y2="${c*1}" stroke="${col}" stroke-width="1.2" opacity="0.3"/>`,
+      "ape lineage": `<ellipse cx="${c}" cy="${c}" rx="${c*0.18}" ry="${c*0.25}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c}" cy="${c*0.68}" r="${c*0.12}" fill="${col}" opacity="0.12" stroke="${col}" stroke-width="0.8" stroke-opacity="0.3"/><line x1="${c*0.85}" y1="${c*0.85}" x2="${c*0.6}" y2="${c*0.7}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><line x1="${c*1.15}" y1="${c*0.85}" x2="${c*1.4}" y2="${c*0.7}" stroke="${col}" stroke-width="1.5" opacity="0.3"/>`,
+      "human-line split": `<ellipse cx="${c}" cy="${c*1.05}" rx="${c*0.15}" ry="${c*0.22}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c}" cy="${c*0.72}" r="${c*0.11}" fill="${col}" opacity="0.12" stroke="${col}" stroke-width="0.8" stroke-opacity="0.3"/><line x1="${c*0.87}" y1="${c*0.9}" x2="${c*0.65}" y2="${c*1.15}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><line x1="${c*1.13}" y1="${c*0.9}" x2="${c*1.35}" y2="${c*1.15}" stroke="${col}" stroke-width="1.5" opacity="0.3"/>`,
+      "bipedal hominin": `<line x1="${c}" y1="${c*0.55}" x2="${c}" y2="${c*1.1}" stroke="${col}" stroke-width="2" opacity="0.3"/><circle cx="${c}" cy="${c*0.48}" r="${c*0.1}" fill="${col}" opacity="0.12" stroke="${col}" stroke-width="0.8" stroke-opacity="0.4"/><line x1="${c}" y1="${c*1.1}" x2="${c*0.85}" y2="${c*1.45}" stroke="${col}" stroke-width="1.8" opacity="0.3"/><line x1="${c}" y1="${c*1.1}" x2="${c*1.15}" y2="${c*1.45}" stroke="${col}" stroke-width="1.8" opacity="0.3"/><line x1="${c}" y1="${c*0.7}" x2="${c*0.7}" y2="${c*0.85}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><line x1="${c}" y1="${c*0.7}" x2="${c*1.3}" y2="${c*0.85}" stroke="${col}" stroke-width="1.5" opacity="0.3"/>`,
+      "genus Homo": `<line x1="${c}" y1="${c*0.5}" x2="${c}" y2="${c*1.05}" stroke="${col}" stroke-width="2" opacity="0.35"/><circle cx="${c}" cy="${c*0.42}" r="${c*0.11}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="0.8" stroke-opacity="0.4"/><line x1="${c}" y1="${c*1.05}" x2="${c*0.82}" y2="${c*1.45}" stroke="${col}" stroke-width="2" opacity="0.3"/><line x1="${c}" y1="${c*1.05}" x2="${c*1.18}" y2="${c*1.45}" stroke="${col}" stroke-width="2" opacity="0.3"/><line x1="${c}" y1="${c*0.65}" x2="${c*0.65}" y2="${c*0.8}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><line x1="${c}" y1="${c*0.65}" x2="${c*1.35}" y2="${c*0.8}" stroke="${col}" stroke-width="1.5" opacity="0.3"/>`,
+      "modern-bodied hominin": `<line x1="${c}" y1="${c*0.45}" x2="${c}" y2="${c*1}" stroke="${col}" stroke-width="2.5" opacity="0.35"/><circle cx="${c}" cy="${c*0.37}" r="${c*0.12}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><line x1="${c}" y1="${c*1}" x2="${c*0.8}" y2="${c*1.5}" stroke="${col}" stroke-width="2.2" opacity="0.3"/><line x1="${c}" y1="${c*1}" x2="${c*1.2}" y2="${c*1.5}" stroke="${col}" stroke-width="2.2" opacity="0.3"/><line x1="${c}" y1="${c*0.6}" x2="${c*0.6}" y2="${c*0.78}" stroke="${col}" stroke-width="1.8" opacity="0.3"/><line x1="${c}" y1="${c*0.6}" x2="${c*1.4}" y2="${c*0.78}" stroke="${col}" stroke-width="1.8" opacity="0.3"/>`,
+      "our species": `<line x1="${c}" y1="${c*0.42}" x2="${c}" y2="${c*0.98}" stroke="${col}" stroke-width="2.5" opacity="0.4"/><circle cx="${c}" cy="${c*0.33}" r="${c*0.13}" fill="${col}" opacity="0.18" stroke="${col}" stroke-width="1" stroke-opacity="0.5"/><line x1="${c}" y1="${c*0.98}" x2="${c*0.78}" y2="${c*1.5}" stroke="${col}" stroke-width="2.5" opacity="0.35"/><line x1="${c}" y1="${c*0.98}" x2="${c*1.22}" y2="${c*1.5}" stroke="${col}" stroke-width="2.5" opacity="0.35"/><line x1="${c}" y1="${c*0.58}" x2="${c*0.58}" y2="${c*0.75}" stroke="${col}" stroke-width="2" opacity="0.3"/><line x1="${c}" y1="${c*0.58}" x2="${c*1.42}" y2="${c*0.75}" stroke="${col}" stroke-width="2" opacity="0.3"/>`,
+    };
+
+    return shapes[wp.type] || shapes["environmental event"];
+  }
+
+  function formatMagnification(size_m) {
+    if (size_m >= 0.01) return null;
+    const mag = Math.round(0.1 / size_m);
+    if (mag >= 1000000) return "magnified " + (mag/1000000).toFixed(0) + "M\u00d7";
+    if (mag >= 1000) return "magnified " + (mag/1000).toFixed(0) + "k\u00d7";
+    return "magnified " + mag + "\u00d7";
+  }
+
+  function formatSize(m) {
+    if (m >= 1000) return (m/1000).toFixed(0) + " km";
+    if (m >= 1) return m.toFixed(1) + " m";
+    if (m >= 0.01) return (m*100).toFixed(0) + " cm";
+    if (m >= 0.001) return (m*1000).toFixed(1) + " mm";
+    if (m >= 1e-6) return (m*1e6).toFixed(0) + " \u03bcm";
+    return (m*1e9).toFixed(0) + " nm";
+  }
+
+  // Timeline: logarithmic positioning
+  const maxYears = 4200000000;
+  function yearToPos(y) {
+    if (y <= 0) return 1;
+    return 1 - Math.log10(y) / Math.log10(maxYears);
+  }
+
+  // DOM
+  const introGate = document.getElementById("intro-gate");
+  const introEnter = document.getElementById("intro-enter");
+  const experience = document.getElementById("experience");
+  const sceneBg = document.getElementById("scene-bg");
+  const sceneSubject = document.getElementById("scene-subject");
+  const sceneTitle = document.getElementById("scene-title");
+  const sceneDate = document.getElementById("scene-date");
+  const sceneRep = document.getElementById("scene-rep");
+  const sceneWhy = document.getElementById("scene-why");
+  const confidenceBadge = document.getElementById("confidence-badge");
+  const scaleBadge = document.getElementById("scale-badge");
+  const sceneInfo = document.getElementById("scene-info");
+  const timelineTrack = document.getElementById("timeline-track");
+  const timelineBar = document.getElementById("timeline-bar");
+
+  let currentIndex = 0;
+  let transitioning = false;
+
+  // Build timeline nodes positioned by log time across full width
+  const timelineNodes = [];
+  waypoints.forEach((wp, i) => {
+    const node = document.createElement("div");
+    node.className = "timeline-node";
+    node.style.left = (yearToPos(wp.years_ago) * 100) + "%";
+
+    const dot = document.createElement("div");
+    dot.className = "timeline-node-dot";
+
+    const label = document.createElement("div");
+    label.className = "timeline-node-label";
+    label.textContent = wp.title;
+
+    node.appendChild(dot);
+    node.appendChild(label);
+    node.addEventListener("click", (e) => {
+      e.stopPropagation();
+      goTo(i);
+    });
+    timelineTrack.appendChild(node);
+    timelineNodes.push(node);
+  });
+
+  function showWaypoint(index, direction) {
+    if (transitioning) return;
+    transitioning = true;
+
+    const wp = waypoints[index];
+
+    // Fade out
+    sceneInfo.style.opacity = "0";
+    sceneSubject.style.opacity = "0";
+    sceneSubject.style.transform = direction === 1 ? "translateX(-30px)" : "translateX(30px)";
+
+    setTimeout(() => {
+      // Update background
+      const [c1, c2, c3] = wp.palette;
+      sceneBg.style.background = `radial-gradient(ellipse at 50% 60%, ${c3}, ${c2} 40%, ${c1} 100%)`;
+
+      // Update subject
+      const svgSize = 200;
+      const shapes = makeSilhouette(wp, svgSize);
+      sceneSubject.innerHTML = `<svg viewBox="0 0 ${svgSize} ${svgSize}" xmlns="http://www.w3.org/2000/svg">${shapes}</svg>`;
+
+      // Update info
+      sceneTitle.textContent = wp.title;
+      sceneDate.textContent = wp.display_age;
+      sceneRep.textContent = wp.representative;
+      sceneWhy.textContent = wp.why;
+      confidenceBadge.textContent = wp.confidence;
+
+      const mag = formatMagnification(wp.approx_size_m);
+      if (mag) {
+        scaleBadge.textContent = mag;
+        scaleBadge.style.display = "inline-block";
+      } else {
+        scaleBadge.textContent = "~" + formatSize(wp.approx_size_m);
+        scaleBadge.style.display = "inline-block";
+      }
+
+      // Update timeline
+      timelineNodes.forEach((n, i) => {
+        n.classList.toggle("active", i === index);
+      });
+
+      // Fade in
+      sceneSubject.style.transform = direction === 1 ? "translateX(30px)" : "translateX(-30px)";
+      requestAnimationFrame(() => {
+        sceneInfo.style.opacity = "1";
+        sceneSubject.style.opacity = "1";
+        sceneSubject.style.transform = "translateX(0)";
+        transitioning = false;
+      });
+
+      currentIndex = index;
+    }, 350);
+  }
+
+  function goTo(index) {
+    if (index < 0 || index >= waypoints.length || index === currentIndex) return;
+    showWaypoint(index, index > currentIndex ? 1 : -1);
+  }
+
+  // Controls
+  introEnter.addEventListener("click", () => {
+    introGate.classList.add("hidden");
+    experience.style.display = "";
+    showWaypoint(0, 1);
+    setTimeout(() => { introGate.style.display = "none"; }, 900);
+  });
+
+  // Click or drag on timeline bar to navigate
+  function getNearestFromX(clientX) {
+    const rect = timelineTrack.getBoundingClientRect();
+    const pct = (clientX - rect.left) / rect.width;
+    let closestIdx = 0;
+    let closestDist = Infinity;
+    waypoints.forEach((wp, i) => {
+      const dist = Math.abs(yearToPos(wp.years_ago) - pct);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closestIdx = i;
+      }
+    });
+    return closestIdx;
+  }
+
+  let isDragging = false;
+
+  timelineBar.addEventListener("mousedown", (e) => {
+    isDragging = true;
+    timelineBar.classList.add("dragging");
+    const idx = getNearestFromX(e.clientX);
+    goTo(idx);
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!isDragging) return;
+    const idx = getNearestFromX(e.clientX);
+    goTo(idx);
+  });
+
+  document.addEventListener("mouseup", () => {
+    isDragging = false;
+    timelineBar.classList.remove("dragging");
+  });
+
+  timelineBar.addEventListener("touchstart", (e) => {
+    isDragging = true;
+    const idx = getNearestFromX(e.touches[0].clientX);
+    goTo(idx);
+  }, { passive: true });
+
+  timelineBar.addEventListener("touchmove", (e) => {
+    if (!isDragging) return;
+    const idx = getNearestFromX(e.touches[0].clientX);
+    goTo(idx);
+  }, { passive: true });
+
+  timelineBar.addEventListener("touchend", () => {
+    isDragging = false;
+  }, { passive: true });
+
+  document.addEventListener("keydown", (e) => {
+    if (introGate.style.display !== "none") return;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") goTo(currentIndex + 1);
+    if (e.key === "ArrowLeft" || e.key === "ArrowUp") goTo(currentIndex - 1);
+  });
+
+  // Swipe support
+  let touchStartX = 0;
+  document.getElementById("scene-stage").addEventListener("touchstart", (e) => {
+    touchStartX = e.touches[0].clientX;
+  }, { passive: true });
+
+  document.getElementById("scene-stage").addEventListener("touchend", (e) => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 50) {
+      goTo(currentIndex + (dx < 0 ? 1 : -1));
+    }
+  }, { passive: true });
+</script>

@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import TimeHeader from '../components/TimeHeader.astro';
+---
+
+<BaseLayout title="Contact" description="IF you'd like to contact me.">
+  <TimeHeader size={120} />
+
+  <h1>Contact</h1>
+  <p class="page-description">harris.in.nola@gmail.com</p>
+  <ul class="contact-links">
+    <li><a href="https://www.linkedin.com/in/michael-harris-vr/" target="_blank" rel="noopener">LinkedIn</a></li>
+  </ul>
+</BaseLayout>
+
+<style>
+  .page-description {
+    color: var(--color-muted);
+  }
+
+  .contact-links {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+</style>

@@ -1,0 +1,70 @@
+---
+/*
+ * ExperimentCard: Displays a single interactive experiment in the /experiments grid.
+ *
+ * Unlike ProjectCard (which links to external URLs), experiment cards link
+ * to internal pages within the site (/experiments/scale, etc.)
+ */
+
+const { title, description, href, status } = Astro.props;
+---
+
+<article class="experiment-card">
+  <a href={href} class="experiment-card__link">
+    <div class="experiment-card__content">
+      {status && <span class="experiment-card__status">{status}</span>}
+      <h2 class="experiment-card__title">{title}</h2>
+      <p class="experiment-card__description">{description}</p>
+      <span class="experiment-card__cta">Try it &rarr;</span>
+    </div>
+  </a>
+</article>
+
+<style>
+  .experiment-card {
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+
+  .experiment-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+
+  .experiment-card__link {
+    display: block;
+    padding: var(--space-lg);
+    text-decoration: none;
+    color: inherit;
+    text-align: center;
+  }
+
+  .experiment-card__status {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-accent);
+    margin-bottom: var(--space-sm);
+  }
+
+  .experiment-card__title {
+    font-size: 1.25rem;
+    margin-bottom: var(--space-xs);
+  }
+
+  .experiment-card__description {
+    color: var(--color-muted);
+    font-size: 0.9375rem;
+    margin-bottom: var(--space-md);
+  }
+
+  .experiment-card__cta {
+    color: var(--color-accent);
+    font-weight: 500;
+    font-size: 0.9375rem;
+  }
+</style>

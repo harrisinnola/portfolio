@@ -1,0 +1,165 @@
+/*
+ * Global Styles
+ *
+ * 1. CSS Reset
+ * 2. Custom Properties
+ * 3. Base Typography (Inter — extra-light)
+ * 4. Layout Utilities
+ * 5. Accessibility
+ */
+
+/* ========================
+   1. CSS RESET
+   ======================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ========================
+   2. CUSTOM PROPERTIES
+   ======================== */
+
+:root {
+  /* Colors */
+  --color-bg: #ffffff;
+  --color-text: #1a1a1a;
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --color-muted: #9ca3af;
+  --color-border: #e5e7eb;
+  --color-surface: #f9fafb;
+
+  /* Typography — Outfit loaded from Google Fonts in Head.astro */
+  --font-body: 'Outfit', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 2rem;
+  --space-xl: 4rem;
+
+  /* Layout */
+  --max-width: 64rem;
+}
+
+/* ========================
+   3. BASE TYPOGRAPHY
+   ======================== */
+
+html {
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  line-height: 1.7;
+}
+
+body {
+  font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+  font-weight: 200;
+  letter-spacing: 0.01em;
+}
+
+h1, h2, h3, h4 {
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  font-weight: 200;
+}
+
+h1 { font-size: 2.5rem; margin-bottom: var(--space-md); letter-spacing: 0.06em; }
+h2 { font-size: 1.75rem; margin-bottom: var(--space-sm); }
+h3 { font-size: 1.25rem; margin-bottom: var(--space-sm); }
+
+p {
+  margin-bottom: var(--space-md);
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+ul, ol {
+  padding-left: var(--space-lg);
+}
+
+/* ========================
+   4. LAYOUT UTILITIES
+   ======================== */
+
+.container {
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: var(--space-md);
+  text-align: center;
+}
+
+/* ========================
+   5. ACCESSIBILITY
+   ======================== */
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-accent);
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 0 0 0.25rem 0.25rem;
+  z-index: 1000;
+  transition: top 0.15s;
+}
+
+.skip-link:focus {
+  top: 0;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ========================
+   6. PAGE TRANSITION CASCADE
+   ======================== */
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stagger children of main on page load and after view transitions */
+.container > *:not(.time-header) {
+  animation: fadeUp 0.6s ease both;
+}
+
+.container > *:nth-child(2) { animation-delay: 0.08s; }
+.container > *:nth-child(3) { animation-delay: 0.16s; }
+.container > *:nth-child(4) { animation-delay: 0.24s; }
+.container > *:nth-child(5) { animation-delay: 0.32s; }
+.container > *:nth-child(6) { animation-delay: 0.40s; }

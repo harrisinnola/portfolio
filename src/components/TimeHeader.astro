@@ -1,0 +1,232 @@
+---
+const { size = 120 } = Astro.props;
+const isHome = Astro.url.pathname === '/';
+const initialClass = isHome ? 'time-header time-header--hero-initial' : 'time-header';
+---
+
+<div class={initialClass} transition:persist="time-header">
+  <a href="/" class="time-header__link">
+    <canvas
+      class="time-header__canvas"
+      data-time-canvas
+      data-size={size}
+    ></canvas>
+  </a>
+  <p class="time-header__legend"><span style="color:#a90b07">second </span><span class="time-header__legend-sep"></span><span style="color:#a90b07">minute </span><span class="time-header__legend-sep"> </span><span style="color:#ae1a17">hour </span><span class="time-header__legend-sep"> </span><span style="color:#b93936">day </span><span class="time-header__legend-sep"> </span><span style="color:#c45754">week </span><span class="time-header__legend-sep"> </span><span style="color:#cf7673">month </span><span class="time-header__legend-sep"> </span><span style="color:#d99493">year </span><span class="time-header__legend-sep"> </span><span style="color:#e4b3b1">lifespan</span></p>
+</div>
+
+<!-- Inline script runs synchronously before paint to trigger the fade-in -->
+<script is:inline>
+  (function() {
+    var header = document.querySelector('.time-header');
+    if (!header) return;
+    var isHome = window.location.pathname === '/';
+
+    if (header.classList.contains('time-header--hero-initial')) {
+      // First load on home: already invisible+large from server HTML.
+      // After one frame, swap to hero (opacity 1) to trigger the CSS fade-in.
+      requestAnimationFrame(function() {
+        header.classList.remove('time-header--hero-initial');
+        header.classList.add('time-header--hero');
+      });
+    }
+  })();
+</script>
+
+<style is:global>
+  .time-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: var(--space-sm);
+    transition: transform 1.4s cubic-bezier(0.4, 0, 0.1, 1),
+                margin-top 1.4s cubic-bezier(0.4, 0, 0.1, 1),
+                margin-bottom 1.4s cubic-bezier(0.4, 0, 0.1, 1),
+                opacity 0.8s ease;
+  }
+
+  /* Initial load on home: invisible and large (set server-side, before first paint) */
+  .time-header--hero-initial {
+    transform: scale(3.5);
+    margin-top: 25vh;
+    margin-bottom: 45vh;
+    opacity: 0;
+    transition: none;
+  }
+
+  /* Hero state: large and centered, visible */
+  .time-header--hero {
+    transform: scale(3.5);
+    margin-top: 25vh;
+    margin-bottom: 45vh;
+    opacity: 1;
+    transition: transform 1.4s cubic-bezier(0.16, 1, 0.3, 1),
+                margin-top 1.4s cubic-bezier(0.16, 1, 0.3, 1),
+                margin-bottom 1.4s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.8s ease;
+  }
+
+  .time-header__link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .time-header__link:hover {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .time-header__canvas {
+    margin-bottom: var(--space-xs);
+  }
+
+  .time-header__legend {
+    font-size: 0.268rem;
+    letter-spacing: 0.12em;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    pointer-events: none;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .time-header__legend-sep {
+    color: var(--color-border);
+  }
+
+  .time-header--hero .time-header__legend,
+  .time-header--hero-initial .time-header__legend {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.5s;
+  }
+</style>
+
+<script>
+  function initTimeCanvas(canvas) {
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const size = parseInt(canvas.dataset.size, 10);
+
+    // Render at 3.5× extra resolution so canvas stays sharp when CSS-scaled up
+    const maxScale = 3.5;
+    const totalScale = dpr * maxScale;
+    canvas.width = size * totalScale;
+    canvas.height = size * totalScale;
+    canvas.style.width = size + 'px';
+    canvas.style.height = size + 'px';
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(totalScale, totalScale);
+
+    const cx = size / 2;
+    const cy = size / 2;
+    const minRadius = size * 0.025;
+    const radiusStep = size * 0.05;
+    const gradientInner = size * 0.1;
+
+    const lineWidth = Math.max(1, size * 0.0067);
+
+    function getDaysInMonth(month, year) {
+      return new Date(year, month, 0).getDate();
+    }
+
+    function drawArc(radius, percent) {
+      const grd = ctx.createRadialGradient(cx, cy, gradientInner, cx, cy, size / 2);
+      grd.addColorStop(0, '#a90b07');
+      grd.addColorStop(1, 'white');
+      ctx.lineWidth = lineWidth;
+      ctx.strokeStyle = grd;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 1.5 * Math.PI, percent * Math.PI);
+      ctx.stroke();
+    }
+
+    if (canvas._rafId) cancelAnimationFrame(canvas._rafId);
+
+    function draw() {
+      ctx.clearRect(0, 0, size, size);
+
+      const date = new Date();
+      const ms = date.getTime();
+      const multipliers = [1000, 60000, 3600000];
+
+      let radius = minRadius;
+
+      for (let i = 0; i < multipliers.length; i++) {
+        const percent = (((ms % multipliers[i]) / multipliers[i]) * 2) - 0.5;
+        drawArc(radius, percent);
+        radius += radiusStep;
+      }
+
+      let percent = (date.getHours() / 24) * 2 - 0.5;
+      drawArc(radius, percent);
+      radius += radiusStep;
+
+      percent = ((date.getDay() / 7) + (date.getHours() / 24) / 7) * 2 - 0.5;
+      drawArc(radius, percent);
+      radius += radiusStep;
+
+      percent = ((date.getDate() / getDaysInMonth(date.getMonth(), date.getFullYear())) + (date.getHours() / 24) / 30) * 2 - 0.5;
+      drawArc(radius, percent);
+      radius += radiusStep;
+
+      percent = ((date.getMonth() / 12) + (date.getDate() / getDaysInMonth(date.getMonth(), date.getFullYear()) / 12)) * 2 - 0.5;
+      drawArc(radius, percent);
+      radius += radiusStep;
+
+      percent = ((date.getFullYear() - 1982) / 87 + (date.getMonth() / 12) / (date.getFullYear() - 1982) / 87) * 2 - 0.5;
+      drawArc(radius, percent);
+
+      canvas._rafId = requestAnimationFrame(draw);
+    }
+
+    canvas._currentSize = size;
+    draw();
+  }
+
+  // Initialize canvas
+  document.querySelectorAll('[data-time-canvas]').forEach(initTimeCanvas);
+
+  // Shrink circle before navigating away from home
+  document.addEventListener('astro:before-preparation', (ev) => {
+    const header = document.querySelector('.time-header');
+    if (!header) return;
+    const isHero = header.classList.contains('time-header--hero');
+    const goingHome = new URL(ev.to).pathname === '/';
+
+    if (isHero && !goingHome) {
+      const originalLoader = ev.loader;
+      ev.loader = async () => {
+        header.classList.remove('time-header--hero');
+        await new Promise(resolve => setTimeout(resolve, 1400));
+        await originalLoader();
+      };
+    }
+  });
+
+  // Grow circle when arriving at home (fires after view transition completes)
+  document.addEventListener('astro:page-load', () => {
+    const header = document.querySelector('.time-header');
+    if (!header) return;
+
+    // Reinitialize canvas after navigation (persist keeps DOM but context can be lost)
+    document.querySelectorAll('[data-time-canvas]').forEach(canvas => {
+      if (!canvas._rafId) initTimeCanvas(canvas);
+    });
+
+    // Skip initial load — the inline script handles the first fade-in
+    if (header.classList.contains('time-header--hero-initial')) return;
+
+    if (window.location.pathname === '/') {
+      // Delay so page content fades out before circle grows
+      setTimeout(() => header.classList.add('time-header--hero'), 300);
+    } else {
+      header.classList.remove('time-header--hero');
+    }
+  });
+</script>

@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import TimeHeader from '../../components/TimeHeader.astro';
+import ExperimentCard from '../../components/ExperimentCard.astro';
+
+const experiments = [
+  {
+    title: 'Lineage',
+    description: 'An interactive journey through 4.1 billion years of evolution, from alkaline hydrothermal vents to modern humans.',
+    href: '/experiments/lineage/',
+    status: 'new',
+  },
+];
+---
+
+<BaseLayout title="Experiments" description="Interactive experiments and creative coding by Mike Harris.">
+  <TimeHeader size={120} />
+
+  <h1>Experiments</h1>
+  <p class="page-description">Web based interactive experiments.</p>
+
+  <div class="experiment-grid">
+    {experiments.map(experiment => (
+      <ExperimentCard
+        title={experiment.title}
+        description={experiment.description}
+        href={experiment.href}
+        status={experiment.status}
+      />
+    ))}
+  </div>
+</BaseLayout>
+
+<style>
+  .page-description {
+    color: var(--color-muted);
+    margin-bottom: var(--space-lg);
+  }
+
+  .experiment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-lg);
+    margin-top: var(--space-md);
+  }
+</style>

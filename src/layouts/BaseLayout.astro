@@ -1,0 +1,55 @@
+---
+/*
+ * BaseLayout: The shared HTML shell for every page.
+ *
+ * Think of this as a picture frame — the frame (nav, footer, <head>)
+ * stays the same on every page, but the picture (page content) changes.
+ * The <slot /> tag marks where each page's content goes.
+ *
+ * Every page in src/pages/ imports this layout and wraps its content:
+ *
+ *   <BaseLayout title="About" description="...">
+ *     <h1>About</h1>
+ *     <p>Page content here</p>
+ *   </BaseLayout>
+ *
+ * Props:
+ *   title — page title for the browser tab and SEO
+ *   description — page summary for search engines
+ */
+
+import { fade } from 'astro:transitions';
+import '../styles/global.css';
+import Head from '../components/Head.astro';
+import SkipLink from '../components/SkipLink.astro';
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <Head title={title} description={description} />
+  <body>
+    <SkipLink />
+    <Navigation transition:persist />
+    <!-- id="main-content" is the target of the skip link.
+         When a keyboard user activates the skip link, focus
+         jumps here, past the navigation. -->
+    <main id="main-content" class="container" transition:animate={fade({ duration: '0.4s' })}>
+      <slot />
+    </main>
+    <Footer transition:animate={fade({ duration: '0.35s' })} />
+  </body>
+</html>
+
+<style>
+  main {
+    padding-top: var(--space-md);
+    padding-bottom: var(--space-xl);
+    /* Ensure main content area fills available space
+       so the footer stays at the bottom */
+    min-height: 60vh;
+  }
+</style>

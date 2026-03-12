@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import TimeHeader from '../components/TimeHeader.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { projects } from '../data/projects.js';
+---
+
+<BaseLayout title="Prototypes" description="VR/AR prototypes and interactive experiences by Mike Harris.">
+  <TimeHeader size={120} />
+
+  <h1>Prototypes</h1>
+  <p class="page-description">Immersive prototypes built in Unity.</p>
+
+  <div class="project-grid">
+    {projects.map(project => (
+      <ProjectCard
+        title={project.title}
+        description={project.description}
+        image={project.image}
+        tags={project.tags}
+        url={project.url}
+        embed={project.embed}
+      />
+    ))}
+  </div>
+</BaseLayout>
+
+<style>
+  .page-description {
+    color: var(--color-muted);
+    margin-bottom: var(--space-lg);
+  }
+
+  .project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-lg);
+    margin-top: var(--space-md);
+  }
+</style>
