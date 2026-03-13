@@ -2,8 +2,8 @@
 const currentPath = Astro.url.pathname;
 
 const links = [
-  { label: 'Experiments', href: '/experiments/' },
-  { label: 'Prototypes', href: '/prototypes/' },
+  { label: 'Ideas', href: '/experiments/' },
+  { label: 'Past Work', href: '/prototypes/' },
   { label: 'Contact', href: '/contact/' },
 ];
 ---
@@ -36,11 +36,21 @@ const links = [
   }
 
   ul {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     gap: var(--space-md);
     list-style: none;
     padding: 0;
   }
+
+  li:first-child {
+    text-align: right;
+  }
+
+  li:last-child {
+    text-align: left;
+  }
+
 
   a {
     color: var(--color-muted);
