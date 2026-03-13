@@ -1,0 +1,441 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Path To You" description="A scroll-driven journey through time, from darkness to light.">
+  <div class="pty" id="pty">
+    <div class="pty-scroll" id="pty-scroll"></div>
+
+    <div class="pty-fixed" id="pty-fixed">
+      <div class="pty-image" id="pty-image">
+        <div class="pty-subject" id="pty-subject"></div>
+      </div>
+      <div class="pty-text" id="pty-text">
+        <h2 class="pty-title" id="pty-title"></h2>
+        <p class="pty-sub" id="pty-sub"></p>
+      </div>
+      <div class="pty-progress-bar">
+        <div class="pty-progress-fill" id="pty-progress-fill"></div>
+      </div>
+    </div>
+
+    <div class="pty-year-counter" id="pty-year-counter">4,100,000,000 years ago</div>
+
+    <div class="pty-timeline-bar" id="pty-timeline-bar">
+      <div class="pty-timeline-track">
+        <div class="pty-timeline-line"></div>
+        <div class="pty-timeline-cursor" id="pty-timeline-cursor"></div>
+      </div>
+    </div>
+
+    <a href="/experiments/" class="pty-back" id="pty-back">&larr; Back</a>
+  </div>
+</BaseLayout>
+
+<style is:global>
+  .pty {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    font-family: var(--font-body);
+  }
+
+  .pty-scroll {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .pty-fixed {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .pty-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  .pty-subject {
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pty-subject svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .pty-text {
+    text-align: center;
+    max-width: 500px;
+    padding: 0 2rem;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+
+  .pty-title {
+    font-size: 2rem;
+    font-weight: 200;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.5rem;
+    transition: color 0.5s ease;
+  }
+
+  .pty-sub {
+    font-size: 1rem;
+    font-weight: 200;
+    line-height: 1.6;
+    transition: color 0.5s ease;
+    margin: 0;
+  }
+
+  .pty-progress-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(128, 128, 128, 0.2);
+    z-index: 10;
+  }
+
+  .pty-progress-fill {
+    height: 100%;
+    width: 0%;
+    transition: background 0.3s ease;
+  }
+
+  .pty-back {
+    position: fixed;
+    top: 1rem;
+    left: 1.5rem;
+    z-index: 20;
+    font-size: 0.8125rem;
+    text-decoration: none;
+    transition: color 0.3s, opacity 0.3s;
+  }
+
+  .pty-year-counter {
+    position: fixed;
+    top: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2.5rem;
+    font-weight: 200;
+    letter-spacing: 0.04em;
+    z-index: 10;
+    transition: color 0.3s ease;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pty-timeline-bar {
+    position: fixed;
+    left: 1rem;
+    top: 3.5rem;
+    bottom: 3rem;
+    width: 3px;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .pty-timeline-track {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .pty-timeline-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(128, 128, 128, 0.2);
+    border-radius: 2px;
+  }
+
+  .pty-timeline-marker {
+    position: absolute;
+    left: -3px;
+    width: 9px;
+    height: 2px;
+    background: #c8a800;
+    pointer-events: none;
+  }
+
+  .pty-timeline-cursor {
+    position: absolute;
+    left: -2px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #fff;
+    transition: top 0.15s ease, background 0.3s ease;
+    pointer-events: none;
+  }
+
+  @media (max-width: 640px) {
+    .pty-title { font-size: 1.5rem; }
+    .pty-sub { font-size: 0.875rem; }
+    .pty-timeline-bar { left: 0.5rem; }
+    .pty-year-counter { font-size: 1.5rem; top: 1rem; }
+  }
+</style>
+
+<script>
+  // ── CONFIG ──────────────────────────────────────────────
+  // Scale: pixels of scroll per timeline section. Increase for slower scroll.
+  const SCALE = 2000;
+
+  const waypoints = [
+    { title:"Alkaline hydrothermal vents", sub:"A leading origin-of-life hypothesis places prebiotic chemistry in porous alkaline vent systems that supplied chemical gradients, mineral surfaces, and compartment-like spaces.", display_age:"ca. 4.1 billion years ago", years_ago:4100000000, type:"environmental event", palette:["#1a0800","#3d1800","#6b3a1a"] },
+    { title:"Protocell-like compartments", sub:"Before true cells, chemistry may have been concentrated inside mineral pores or primitive membrane compartments that stabilized reactions.", display_age:"ca. 4.0 billion years ago", years_ago:4000000000, type:"precellular transition", palette:["#0d0a1a","#1a1233","#2a1f4d"] },
+    { title:"First cells / LUCA-grade microbe", sub:"The last universal common ancestor marks the point after which all known life shares a common biological inheritance.", display_age:"older than 3.9 billion years ago", years_ago:3900000000, type:"microbial ancestor", palette:["#0a0f1a","#0f1a2d","#1a2d47"] },
+    { title:"Cyanobacterial mats", sub:"Oxygenic photosynthesis by cyanobacteria helped transform Earth's atmosphere and oceans.", display_age:"ca. 2.7 billion years ago", years_ago:2700000000, type:"microbial innovation", palette:["#0a1a0f","#0f2d1a","#1a4729"] },
+    { title:"Great Oxidation Event", sub:"Atmospheric oxygen rose for the first time at planetary scale, opening ecological space for new metabolisms and later complexity.", display_age:"2.4 to 2.2 billion years ago", years_ago:2400000000, type:"planetary transition", palette:["#0a1520","#0f2540","#1a3d5c"] },
+    { title:"First eukaryotes", sub:"Eukaryotic cells introduced internal compartmentalization and, eventually, the lineage that led to animals, plants, and fungi.", display_age:"ca. 1.8 billion years ago", years_ago:1800000000, type:"cellular transition", palette:["#1a0d1a","#2d1a2d","#472a47"] },
+    { title:"Complex multicellular eukaryotes", sub:"Large multicellular bodies and cellular differentiation emerged long before animals appeared.", display_age:"ca. 1.0 billion years ago", years_ago:1000000000, type:"multicellularity transition", palette:["#0a1a12","#0f2d1f","#1a4730"] },
+    { title:"Ediacaran animals", sub:"The Ediacaran world preserves the earliest large, complex organisms and the first clear rise of animal-grade ecosystems.", display_age:"ca. 575 million years ago", years_ago:575000000, type:"early animals", palette:["#0f0d1a","#1a1533","#2d2355"] },
+    { title:"Bilaterian animals", sub:"Bilaterian body plans set up the left-right symmetry, front-back axes, and organ systems behind most later animals, including us.", display_age:"ca. 550 million years ago", years_ago:550000000, type:"body-plan transition", palette:["#12100d","#24201a","#3d3528"] },
+    { title:"Jawless vertebrates", sub:"Early vertebrates established the basic vertebrate body plan: head, braincase, backbone, and sensory systems.", display_age:"about 500 million years ago", years_ago:500000000, type:"vertebrate origin", palette:["#0d1218","#1a2530","#283d50"] },
+    { title:"Jawed fishes", sub:"Jaws transformed feeding and predation, and jawed vertebrates became the ancestors of bony fishes, sharks, and eventually tetrapods.", display_age:"ca. 420 million years ago", years_ago:420000000, type:"vertebrate innovation", palette:["#0d1515","#1a2d2d","#284747"] },
+    { title:"Lobe-finned fishes", sub:"Our lineage runs through lobe-finned fishes, whose robust fins provided the anatomical basis for later limbs.", display_age:"ca. 390 million years ago", years_ago:390000000, type:"tetrapod stem", palette:["#0f1510","#1a2d1f","#284730"] },
+    { title:"Stem tetrapods", sub:"Stem tetrapods combined fish and tetrapod traits, including stronger girdles, mobile neck regions, and limb-like fins.", display_age:"ca. 375 million years ago", years_ago:375000000, type:"water-to-land transition", palette:["#15120d","#2d251a","#473d28"] },
+    { title:"Early tetrapods", sub:"Limbed vertebrates became capable of moving through shallow water and onto land, starting the terrestrial vertebrate story.", display_age:"ca. 365 million years ago", years_ago:365000000, type:"land-capable vertebrate", palette:["#12150d","#252d1a","#3d4728"] },
+    { title:"Amniotes", sub:"Amniotes reproduced away from open water using protected eggs and associated membranes, freeing vertebrates from aquatic breeding.", display_age:"ca. 320 million years ago", years_ago:320000000, type:"reproductive transition", palette:["#150f0d","#2d1f1a","#473228"] },
+    { title:"Synapsids", sub:"Synapsids are the amniote branch that ultimately gave rise to mammals, including humans.", display_age:"ca. 300 million years ago", years_ago:300000000, type:"mammal-line ancestor", palette:["#1a0f0a","#331f15","#4d3020"] },
+    { title:"Cynodonts", sub:"Cynodonts show many mammal-leaning traits, including differentiated teeth and jaw-ear transitions on the path toward true mammals.", display_age:"ca. 240 million years ago", years_ago:240000000, type:"mammalian transition", palette:["#15100d","#2d221a","#473828"] },
+    { title:"Early mammals", sub:"The earliest mammals were small but they established the body plan and physiology that would eventually produce primates and humans.", display_age:"225 to 205 million years ago", years_ago:225000000, type:"true mammals", palette:["#0d1015","#1a222d","#283847"] },
+    { title:"Early primates", sub:"Early primates adapted to arboreal life with grasping hands, flexible shoulders, and visual specialization that set the stage for apes and humans.", display_age:"56 to 65 million years ago", years_ago:56000000, type:"primate origin", palette:["#0d150f","#1a2d20","#284733"] },
+    { title:"Early apes", sub:"Miocene apes represent the branch from which African apes and, much later, humans emerged.", display_age:"ca. 18 million years ago", years_ago:18000000, type:"ape lineage", palette:["#12150d","#252d1a","#3d4728"] },
+    { title:"Earliest hominins", sub:"This marks the human lineage after the split from the lineage leading to chimpanzees and bonobos.", display_age:"7 to 6 million years ago", years_ago:6500000, type:"human-line split", palette:["#15120a","#2d2515","#4d3d22"] },
+    { title:"Australopithecus afarensis", sub:"A. afarensis combined habitual bipedalism with retained climbing traits and is one of the clearest early human waypoints.", display_age:"3.85 to 2.95 million years ago", years_ago:3400000, type:"bipedal hominin", palette:["#1a150d","#332a1a","#4d4028"] },
+    { title:"Homo habilis", sub:"Early Homo shows a larger braincase and a more human-like face than australopiths and is closely associated with early stone tool use.", display_age:"2.4 to 1.4 million years ago", years_ago:2000000, type:"genus Homo", palette:["#15100a","#2d2215","#4d3822"] },
+    { title:"Homo erectus", sub:"H. erectus had more modern body proportions, traveled beyond Africa, and represents a major shift toward the human body plan.", display_age:"1.89 Ma to 110 ka", years_ago:1600000, type:"modern-bodied hominin", palette:["#120d0a","#251a15","#3d2d22"] },
+    { title:"Homo sapiens", sub:"Our species emerged in Africa roughly 300,000 years ago and later spread worldwide, carrying cumulative culture, language, art, and technology.", display_age:"at least 300,000 years ago to present", years_ago:300000, type:"our species", palette:["#0f0f15","#1a1a2d","#2d2d47"] },
+  ];
+
+  // ── SVG SILHOUETTES (from Lineage) ─────────────────────
+  function makeSilhouette(wp, size) {
+    const s = size;
+    const c = s / 2;
+    const col = wp.palette[2];
+
+    const shapes = {
+      "environmental event": `<circle cx="${c}" cy="${c}" r="${c*0.4}" fill="none" stroke="${col}" stroke-width="1.5" opacity="0.6"/><circle cx="${c}" cy="${c*0.7}" r="${c*0.15}" fill="${col}" opacity="0.3"/><line x1="${c}" y1="${c*0.3}" x2="${c}" y2="${c*1.5}" stroke="${col}" stroke-width="1" opacity="0.4"/><line x1="${c*0.7}" y1="${c*0.5}" x2="${c*0.7}" y2="${c*1.6}" stroke="${col}" stroke-width="0.8" opacity="0.3"/><line x1="${c*1.3}" y1="${c*0.4}" x2="${c*1.3}" y2="${c*1.4}" stroke="${col}" stroke-width="0.8" opacity="0.3"/>`,
+      "precellular transition": `<circle cx="${c}" cy="${c}" r="${c*0.35}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c*0.8}" cy="${c*0.9}" r="${c*0.08}" fill="${col}" opacity="0.3"/><circle cx="${c*1.15}" cy="${c*1.1}" r="${c*0.06}" fill="${col}" opacity="0.25"/>`,
+      "microbial ancestor": `<ellipse cx="${c}" cy="${c}" rx="${c*0.3}" ry="${c*0.2}" fill="${col}" opacity="0.2" stroke="${col}" stroke-width="1" stroke-opacity="0.5"/><circle cx="${c*0.85}" cy="${c}" r="${c*0.05}" fill="${col}" opacity="0.4"/>`,
+      "microbial innovation": `<ellipse cx="${c}" cy="${c*1.1}" rx="${c*0.5}" ry="${c*0.15}" fill="${col}" opacity="0.2"/><ellipse cx="${c}" cy="${c*0.9}" rx="${c*0.45}" ry="${c*0.12}" fill="${col}" opacity="0.15"/><ellipse cx="${c}" cy="${c*0.7}" rx="${c*0.35}" ry="${c*0.1}" fill="${col}" opacity="0.1"/>`,
+      "planetary transition": `<circle cx="${c}" cy="${c}" r="${c*0.45}" fill="none" stroke="${col}" stroke-width="1.5" opacity="0.3"/><path d="M${c*0.3},${c} Q${c},${c*0.5} ${c*1.7},${c}" fill="none" stroke="${col}" stroke-width="1" opacity="0.4"/>`,
+      "cellular transition": `<circle cx="${c}" cy="${c}" r="${c*0.35}" fill="${col}" opacity="0.12" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c}" cy="${c}" r="${c*0.12}" fill="${col}" opacity="0.2" stroke="${col}" stroke-width="0.5" stroke-opacity="0.3"/><circle cx="${c*0.8}" cy="${c*0.85}" r="${c*0.05}" fill="${col}" opacity="0.35"/>`,
+      "multicellularity transition": `<ellipse cx="${c}" cy="${c}" rx="${c*0.15}" ry="${c*0.4}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4" transform="rotate(-10,${c},${c})"/>`,
+      "early animals": `<ellipse cx="${c}" cy="${c}" rx="${c*0.2}" ry="${c*0.4}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><line x1="${c}" y1="${c*0.5}" x2="${c*0.7}" y2="${c*0.3}" stroke="${col}" stroke-width="0.8" opacity="0.3"/>`,
+      "body-plan transition": `<ellipse cx="${c}" cy="${c}" rx="${c*0.4}" ry="${c*0.1}" fill="${col}" opacity="0.2" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/>`,
+      "vertebrate origin": `<ellipse cx="${c}" cy="${c}" rx="${c*0.35}" ry="${c*0.15}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c*0.65}" cy="${c}" r="${c*0.04}" fill="${col}" opacity="0.5"/>`,
+      "vertebrate innovation": `<ellipse cx="${c}" cy="${c}" rx="${c*0.38}" ry="${c*0.18}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1.2" stroke-opacity="0.4"/><path d="M${c*0.6},${c} L${c*0.5},${c*0.92}" stroke="${col}" stroke-width="1" opacity="0.4"/>`,
+      "tetrapod stem": `<ellipse cx="${c}" cy="${c*0.95}" rx="${c*0.35}" ry="${c*0.15}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><line x1="${c*0.75}" y1="${c*1.1}" x2="${c*0.6}" y2="${c*1.3}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><line x1="${c*1.25}" y1="${c*1.1}" x2="${c*1.4}" y2="${c*1.3}" stroke="${col}" stroke-width="1.5" opacity="0.3"/>`,
+      "water-to-land transition": `<ellipse cx="${c}" cy="${c*0.9}" rx="${c*0.35}" ry="${c*0.15}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><line x1="${c*0.7}" y1="${c*1.05}" x2="${c*0.55}" y2="${c*1.3}" stroke="${col}" stroke-width="2" opacity="0.3"/><line x1="${c*1.3}" y1="${c*1.05}" x2="${c*1.45}" y2="${c*1.3}" stroke="${col}" stroke-width="2" opacity="0.3"/>`,
+      "land-capable vertebrate": `<ellipse cx="${c}" cy="${c*0.85}" rx="${c*0.3}" ry="${c*0.15}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><line x1="${c*0.7}" y1="${c}" x2="${c*0.55}" y2="${c*1.25}" stroke="${col}" stroke-width="2" opacity="0.3"/><line x1="${c*1.3}" y1="${c}" x2="${c*1.45}" y2="${c*1.25}" stroke="${col}" stroke-width="2" opacity="0.3"/>`,
+      "reproductive transition": `<ellipse cx="${c}" cy="${c*0.9}" rx="${c*0.2}" ry="${c*0.12}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><line x1="${c*0.85}" y1="${c*1.02}" x2="${c*0.75}" y2="${c*1.2}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><line x1="${c*1.15}" y1="${c*1.02}" x2="${c*1.25}" y2="${c*1.2}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><ellipse cx="${c*1.4}" cy="${c*1.15}" rx="${c*0.06}" ry="${c*0.05}" fill="${col}" opacity="0.2"/>`,
+      "mammal-line ancestor": `<ellipse cx="${c}" cy="${c*0.85}" rx="${c*0.35}" ry="${c*0.18}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1.2" stroke-opacity="0.4"/><path d="M${c*0.65},${c*0.68} Q${c*0.65},${c*0.4} ${c*0.75},${c*0.35} Q${c*1.35},${c*0.35} ${c*1.35},${c*0.68}" fill="none" stroke="${col}" stroke-width="1" opacity="0.3"/>`,
+      "mammalian transition": `<ellipse cx="${c}" cy="${c*0.9}" rx="${c*0.25}" ry="${c*0.15}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c*0.7}" cy="${c*0.78}" r="${c*0.08}" fill="${col}" opacity="0.12" stroke="${col}" stroke-width="0.8" stroke-opacity="0.3"/>`,
+      "true mammals": `<ellipse cx="${c}" cy="${c*0.9}" rx="${c*0.18}" ry="${c*0.1}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c*0.82}" cy="${c*0.82}" r="${c*0.06}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="0.8" stroke-opacity="0.3"/>`,
+      "primate origin": `<ellipse cx="${c}" cy="${c*0.95}" rx="${c*0.15}" ry="${c*0.2}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c}" cy="${c*0.7}" r="${c*0.1}" fill="${col}" opacity="0.12" stroke="${col}" stroke-width="0.8" stroke-opacity="0.3"/><line x1="${c*0.88}" y1="${c*0.85}" x2="${c*0.7}" y2="${c*1}" stroke="${col}" stroke-width="1.2" opacity="0.3"/><line x1="${c*1.12}" y1="${c*0.85}" x2="${c*1.3}" y2="${c*1}" stroke="${col}" stroke-width="1.2" opacity="0.3"/>`,
+      "ape lineage": `<ellipse cx="${c}" cy="${c}" rx="${c*0.18}" ry="${c*0.25}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c}" cy="${c*0.68}" r="${c*0.12}" fill="${col}" opacity="0.12" stroke="${col}" stroke-width="0.8" stroke-opacity="0.3"/><line x1="${c*0.85}" y1="${c*0.85}" x2="${c*0.6}" y2="${c*0.7}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><line x1="${c*1.15}" y1="${c*0.85}" x2="${c*1.4}" y2="${c*0.7}" stroke="${col}" stroke-width="1.5" opacity="0.3"/>`,
+      "human-line split": `<ellipse cx="${c}" cy="${c*1.05}" rx="${c*0.15}" ry="${c*0.22}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c}" cy="${c*0.72}" r="${c*0.11}" fill="${col}" opacity="0.12" stroke="${col}" stroke-width="0.8" stroke-opacity="0.3"/><line x1="${c*0.87}" y1="${c*0.9}" x2="${c*0.65}" y2="${c*1.15}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><line x1="${c*1.13}" y1="${c*0.9}" x2="${c*1.35}" y2="${c*1.15}" stroke="${col}" stroke-width="1.5" opacity="0.3"/>`,
+      "bipedal hominin": `<line x1="${c}" y1="${c*0.55}" x2="${c}" y2="${c*1.1}" stroke="${col}" stroke-width="2" opacity="0.3"/><circle cx="${c}" cy="${c*0.48}" r="${c*0.1}" fill="${col}" opacity="0.12" stroke="${col}" stroke-width="0.8" stroke-opacity="0.4"/><line x1="${c}" y1="${c*1.1}" x2="${c*0.85}" y2="${c*1.45}" stroke="${col}" stroke-width="1.8" opacity="0.3"/><line x1="${c}" y1="${c*1.1}" x2="${c*1.15}" y2="${c*1.45}" stroke="${col}" stroke-width="1.8" opacity="0.3"/><line x1="${c}" y1="${c*0.7}" x2="${c*0.7}" y2="${c*0.85}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><line x1="${c}" y1="${c*0.7}" x2="${c*1.3}" y2="${c*0.85}" stroke="${col}" stroke-width="1.5" opacity="0.3"/>`,
+      "genus Homo": `<line x1="${c}" y1="${c*0.5}" x2="${c}" y2="${c*1.05}" stroke="${col}" stroke-width="2" opacity="0.35"/><circle cx="${c}" cy="${c*0.42}" r="${c*0.11}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="0.8" stroke-opacity="0.4"/><line x1="${c}" y1="${c*1.05}" x2="${c*0.82}" y2="${c*1.45}" stroke="${col}" stroke-width="2" opacity="0.3"/><line x1="${c}" y1="${c*1.05}" x2="${c*1.18}" y2="${c*1.45}" stroke="${col}" stroke-width="2" opacity="0.3"/><line x1="${c}" y1="${c*0.65}" x2="${c*0.65}" y2="${c*0.8}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><line x1="${c}" y1="${c*0.65}" x2="${c*1.35}" y2="${c*0.8}" stroke="${col}" stroke-width="1.5" opacity="0.3"/>`,
+      "modern-bodied hominin": `<line x1="${c}" y1="${c*0.45}" x2="${c}" y2="${c*1}" stroke="${col}" stroke-width="2.5" opacity="0.35"/><circle cx="${c}" cy="${c*0.37}" r="${c*0.12}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><line x1="${c}" y1="${c*1}" x2="${c*0.8}" y2="${c*1.5}" stroke="${col}" stroke-width="2.2" opacity="0.3"/><line x1="${c}" y1="${c*1}" x2="${c*1.2}" y2="${c*1.5}" stroke="${col}" stroke-width="2.2" opacity="0.3"/><line x1="${c}" y1="${c*0.6}" x2="${c*0.6}" y2="${c*0.78}" stroke="${col}" stroke-width="1.8" opacity="0.3"/><line x1="${c}" y1="${c*0.6}" x2="${c*1.4}" y2="${c*0.78}" stroke="${col}" stroke-width="1.8" opacity="0.3"/>`,
+      "our species": `<line x1="${c}" y1="${c*0.42}" x2="${c}" y2="${c*0.98}" stroke="${col}" stroke-width="2.5" opacity="0.4"/><circle cx="${c}" cy="${c*0.33}" r="${c*0.13}" fill="${col}" opacity="0.18" stroke="${col}" stroke-width="1" stroke-opacity="0.5"/><line x1="${c}" y1="${c*0.98}" x2="${c*0.78}" y2="${c*1.5}" stroke="${col}" stroke-width="2.5" opacity="0.35"/><line x1="${c}" y1="${c*0.98}" x2="${c*1.22}" y2="${c*1.5}" stroke="${col}" stroke-width="2.5" opacity="0.35"/><line x1="${c}" y1="${c*0.58}" x2="${c*0.58}" y2="${c*0.75}" stroke="${col}" stroke-width="2" opacity="0.3"/><line x1="${c}" y1="${c*0.58}" x2="${c*1.42}" y2="${c*0.75}" stroke="${col}" stroke-width="2" opacity="0.3"/>`,
+    };
+
+    return shapes[wp.type] || shapes["environmental event"];
+  }
+
+  // ── SETUP ──────────────────────────────────────────────
+  const scrollEl = document.getElementById('pty-scroll');
+  const subject = document.getElementById('pty-subject');
+  const titleEl = document.getElementById('pty-title');
+  const subEl = document.getElementById('pty-sub');
+  const imageEl = document.getElementById('pty-image');
+  const textEl = document.getElementById('pty-text');
+  const progressFill = document.getElementById('pty-progress-fill');
+  const backEl = document.getElementById('pty-back');
+  const ptyEl = document.getElementById('pty');
+  const yearCounter = document.getElementById('pty-year-counter');
+  const timelineCursor = document.getElementById('pty-timeline-cursor');
+  const timelineBar = document.getElementById('pty-timeline-bar');
+
+  // Compute scroll positions proportional to time gaps between waypoints
+  // Using sqrt of gaps so billion-year gaps get lots of space but
+  // million-year gaps are still scrollable (pure linear would crush them)
+  const gaps = [];
+  for (let i = 0; i < waypoints.length - 1; i++) {
+    gaps.push(waypoints[i].years_ago - waypoints[i + 1].years_ago);
+  }
+  gaps.push(waypoints[waypoints.length - 1].years_ago); // last waypoint to present
+
+  const sqrtGaps = gaps.map(g => Math.sqrt(g));
+  const totalSqrtGaps = sqrtGaps.reduce((a, b) => a + b, 0);
+
+  // wpScrollPos[i] = scroll progress (0..1) where waypoint i starts
+  const wpScrollPos = [0];
+  let cumulative = 0;
+  for (let i = 0; i < sqrtGaps.length; i++) {
+    cumulative += sqrtGaps[i] / totalSqrtGaps;
+    wpScrollPos.push(cumulative);
+  }
+
+  // Total scroll height
+  const totalHeight = SCALE * waypoints.length;
+  const spacer = document.createElement('div');
+  spacer.style.height = totalHeight + 'px';
+  scrollEl.appendChild(spacer);
+
+  // Build timeline markers at proportional positions
+  const track = timelineBar.querySelector('.pty-timeline-track');
+  waypoints.forEach((wp, i) => {
+    const marker = document.createElement('div');
+    marker.className = 'pty-timeline-marker';
+    marker.style.top = (wpScrollPos[i] * 100) + '%';
+    track.appendChild(marker);
+  });
+
+  let currentWaypoint = -1;
+  let isTransitioning = false;
+
+  const svgSize = 200;
+
+  function formatYears(n) {
+    if (n >= 1e9) return (n / 1e9).toFixed(1) + ' billion';
+    if (n >= 1e6) return (n / 1e6).toFixed(1) + ' million';
+    if (n >= 1e3) return n.toLocaleString();
+    return String(Math.round(n));
+  }
+
+  function renderSubject(wp) {
+    const shapes = makeSilhouette(wp, svgSize);
+    subject.innerHTML = `<svg viewBox="0 0 ${svgSize} ${svgSize}" xmlns="http://www.w3.org/2000/svg">${shapes}</svg>`;
+  }
+
+  function showWaypoint(index) {
+    if (index === currentWaypoint || isTransitioning) return;
+    isTransitioning = true;
+
+    const wp = waypoints[index];
+
+    // Fade out
+    imageEl.style.opacity = '0';
+    imageEl.style.transform = 'translateY(10px)';
+    textEl.style.opacity = '0';
+    textEl.style.transform = 'translateY(10px)';
+
+    setTimeout(() => {
+      renderSubject(wp);
+      titleEl.textContent = wp.title;
+      subEl.textContent = wp.display_age + ' — ' + wp.sub;
+
+      // Fade in
+      imageEl.style.opacity = '1';
+      imageEl.style.transform = 'translateY(0)';
+      textEl.style.opacity = '1';
+      textEl.style.transform = 'translateY(0)';
+
+      currentWaypoint = index;
+      isTransitioning = false;
+    }, 350);
+  }
+
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
+  }
+
+  function update() {
+    const scrollTop = scrollEl.scrollTop;
+    const maxScroll = totalHeight - scrollEl.clientHeight;
+    const progress = Math.min(Math.max(scrollTop / maxScroll, 0), 1);
+
+    // Background: black to white
+    const bg = Math.round(lerp(0, 255, progress));
+    ptyEl.style.background = `rgb(${bg}, ${bg}, ${bg})`;
+
+    // Text color: white to black
+    const textBrightness = bg > 140 ? 0 : 255;
+    const textColor = `rgb(${textBrightness}, ${textBrightness}, ${textBrightness})`;
+    const mutedColor = bg > 140 ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)';
+    titleEl.style.color = textColor;
+    subEl.style.color = textColor;
+    backEl.style.color = textColor;
+    yearCounter.style.color = textColor;
+
+    // Progress bar
+    progressFill.style.width = (progress * 100) + '%';
+    progressFill.style.background = bg > 140 ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)';
+
+    // Timeline cursor (follows scroll linearly down the bar)
+    timelineCursor.style.top = (progress * 100) + '%';
+    timelineCursor.style.background = textColor;
+
+    // Find which waypoint section we're in based on proportional positions
+    let waypointIndex = 0;
+    for (let i = waypoints.length - 1; i >= 0; i--) {
+      if (progress >= wpScrollPos[i]) {
+        waypointIndex = i;
+        break;
+      }
+    }
+
+    // How far through the current section (0..1)
+    const sectionStart = wpScrollPos[waypointIndex];
+    const sectionEnd = wpScrollPos[waypointIndex + 1];
+    const sectionFrac = sectionEnd > sectionStart
+      ? (progress - sectionStart) / (sectionEnd - sectionStart)
+      : 0;
+
+    // Year counter — interpolate within the current section
+    const currentYears = waypoints[waypointIndex].years_ago;
+    const nextYears = waypointIndex < waypoints.length - 1
+      ? waypoints[waypointIndex + 1].years_ago
+      : 0;
+    const interpolatedYears = lerp(currentYears, nextYears, sectionFrac);
+    const displayYears = Math.max(0, Math.round(interpolatedYears));
+
+    if (displayYears <= 0) {
+      yearCounter.textContent = 'Now';
+    } else {
+      yearCounter.textContent = formatYears(displayYears) + ' years ago';
+    }
+
+    showWaypoint(waypointIndex);
+  }
+
+  // Initialize first waypoint immediately (no fade)
+  currentWaypoint = 0;
+  const firstWp = waypoints[0];
+  renderSubject(firstWp);
+  titleEl.textContent = firstWp.title;
+  subEl.textContent = firstWp.display_age + ' — ' + firstWp.sub;
+  titleEl.style.color = '#fff';
+  subEl.style.color = '#fff';
+  backEl.style.color = 'rgba(255,255,255,0.35)';
+  yearCounter.style.color = 'rgba(255,255,255,0.5)';
+  imageEl.style.opacity = '1';
+  textEl.style.opacity = '1';
+
+  scrollEl.addEventListener('scroll', update, { passive: true });
+  update();
+</script>
