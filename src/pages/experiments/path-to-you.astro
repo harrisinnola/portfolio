@@ -68,21 +68,22 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     align-items: center;
     justify-content: center;
     height: 100%;
-    will-change: transform;
   }
 
   .pty-subject {
-    width: 300px;
-    height: 300px;
+    width: 400px;
+    height: 400px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 2rem;
+    margin-bottom: -1rem;
+    will-change: opacity;
   }
 
-  .pty-subject svg {
+  .pty-subject img {
     width: 100%;
     height: 100%;
+    object-fit: contain;
   }
 
   .pty-slide-text {
@@ -103,6 +104,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     font-weight: 200;
     line-height: 1.6;
     margin: 0;
+    will-change: opacity;
   }
 
   .pty-progress-bar {
@@ -150,7 +152,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     left: 1rem;
     top: 3.5rem;
     bottom: 3rem;
-    width: 9px;
+    width: 18px;
     z-index: 10;
     pointer-events: none;
   }
@@ -182,11 +184,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   .pty-timeline-cursor {
     position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    border-radius: 1px;
     background: #fff;
     transition: top 0.15s ease, background 0.3s ease;
     pointer-events: none;
@@ -195,7 +196,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   @media (max-width: 640px) {
     .pty-slide-title { font-size: 1.5rem; }
     .pty-slide-sub { font-size: 0.875rem; }
-    .pty-subject { width: 200px; height: 200px; }
+    .pty-subject { width: 400px; height: 400px; }
     .pty-timeline-bar { left: 0.5rem; }
     .pty-year-counter { font-size: 1.5rem; top: 1rem; }
   }
@@ -204,72 +205,35 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 <script>
   // ── CONFIG ──────────────────────────────────────────────
   // Scale: pixels of scroll per timeline section. Increase for slower scroll.
-  const SCALE = 2000;
+  const SCALE = 4000;
 
   const waypoints = [
-    { title:"Alkaline hydrothermal vents", sub:"A leading origin-of-life hypothesis places prebiotic chemistry in porous alkaline vent systems that supplied chemical gradients, mineral surfaces, and compartment-like spaces.", display_age:"ca. 4.1 billion years ago", years_ago:4100000000, type:"environmental event", palette:["#1a0800","#3d1800","#6b3a1a"] },
-    { title:"Protocell-like compartments", sub:"Before true cells, chemistry may have been concentrated inside mineral pores or primitive membrane compartments that stabilized reactions.", display_age:"ca. 4.0 billion years ago", years_ago:4000000000, type:"precellular transition", palette:["#0d0a1a","#1a1233","#2a1f4d"] },
-    { title:"First cells / LUCA-grade microbe", sub:"The last universal common ancestor marks the point after which all known life shares a common biological inheritance.", display_age:"older than 3.9 billion years ago", years_ago:3900000000, type:"microbial ancestor", palette:["#0a0f1a","#0f1a2d","#1a2d47"] },
-    { title:"Cyanobacterial mats", sub:"Oxygenic photosynthesis by cyanobacteria helped transform Earth's atmosphere and oceans.", display_age:"ca. 2.7 billion years ago", years_ago:2700000000, type:"microbial innovation", palette:["#0a1a0f","#0f2d1a","#1a4729"] },
-    { title:"Great Oxidation Event", sub:"Atmospheric oxygen rose for the first time at planetary scale, opening ecological space for new metabolisms and later complexity.", display_age:"2.4 to 2.2 billion years ago", years_ago:2400000000, type:"planetary transition", palette:["#0a1520","#0f2540","#1a3d5c"] },
-    { title:"First eukaryotes", sub:"Eukaryotic cells introduced internal compartmentalization and, eventually, the lineage that led to animals, plants, and fungi.", display_age:"ca. 1.8 billion years ago", years_ago:1800000000, type:"cellular transition", palette:["#1a0d1a","#2d1a2d","#472a47"] },
-    { title:"Complex multicellular eukaryotes", sub:"Large multicellular bodies and cellular differentiation emerged long before animals appeared.", display_age:"ca. 1.0 billion years ago", years_ago:1000000000, type:"multicellularity transition", palette:["#0a1a12","#0f2d1f","#1a4730"] },
-    { title:"Ediacaran animals", sub:"The Ediacaran world preserves the earliest large, complex organisms and the first clear rise of animal-grade ecosystems.", display_age:"ca. 575 million years ago", years_ago:575000000, type:"early animals", palette:["#0f0d1a","#1a1533","#2d2355"] },
-    { title:"Bilaterian animals", sub:"Bilaterian body plans set up the left-right symmetry, front-back axes, and organ systems behind most later animals, including us.", display_age:"ca. 550 million years ago", years_ago:550000000, type:"body-plan transition", palette:["#12100d","#24201a","#3d3528"] },
-    { title:"Jawless vertebrates", sub:"Early vertebrates established the basic vertebrate body plan: head, braincase, backbone, and sensory systems.", display_age:"about 500 million years ago", years_ago:500000000, type:"vertebrate origin", palette:["#0d1218","#1a2530","#283d50"] },
-    { title:"Jawed fishes", sub:"Jaws transformed feeding and predation, and jawed vertebrates became the ancestors of bony fishes, sharks, and eventually tetrapods.", display_age:"ca. 420 million years ago", years_ago:420000000, type:"vertebrate innovation", palette:["#0d1515","#1a2d2d","#284747"] },
-    { title:"Lobe-finned fishes", sub:"Our lineage runs through lobe-finned fishes, whose robust fins provided the anatomical basis for later limbs.", display_age:"ca. 390 million years ago", years_ago:390000000, type:"tetrapod stem", palette:["#0f1510","#1a2d1f","#284730"] },
-    { title:"Stem tetrapods", sub:"Stem tetrapods combined fish and tetrapod traits, including stronger girdles, mobile neck regions, and limb-like fins.", display_age:"ca. 375 million years ago", years_ago:375000000, type:"water-to-land transition", palette:["#15120d","#2d251a","#473d28"] },
-    { title:"Early tetrapods", sub:"Limbed vertebrates became capable of moving through shallow water and onto land, starting the terrestrial vertebrate story.", display_age:"ca. 365 million years ago", years_ago:365000000, type:"land-capable vertebrate", palette:["#12150d","#252d1a","#3d4728"] },
-    { title:"Amniotes", sub:"Amniotes reproduced away from open water using protected eggs and associated membranes, freeing vertebrates from aquatic breeding.", display_age:"ca. 320 million years ago", years_ago:320000000, type:"reproductive transition", palette:["#150f0d","#2d1f1a","#473228"] },
-    { title:"Synapsids", sub:"Synapsids are the amniote branch that ultimately gave rise to mammals, including humans.", display_age:"ca. 300 million years ago", years_ago:300000000, type:"mammal-line ancestor", palette:["#1a0f0a","#331f15","#4d3020"] },
-    { title:"Cynodonts", sub:"Cynodonts show many mammal-leaning traits, including differentiated teeth and jaw-ear transitions on the path toward true mammals.", display_age:"ca. 240 million years ago", years_ago:240000000, type:"mammalian transition", palette:["#15100d","#2d221a","#473828"] },
-    { title:"Early mammals", sub:"The earliest mammals were small but they established the body plan and physiology that would eventually produce primates and humans.", display_age:"225 to 205 million years ago", years_ago:225000000, type:"true mammals", palette:["#0d1015","#1a222d","#283847"] },
-    { title:"Early primates", sub:"Early primates adapted to arboreal life with grasping hands, flexible shoulders, and visual specialization that set the stage for apes and humans.", display_age:"56 to 65 million years ago", years_ago:56000000, type:"primate origin", palette:["#0d150f","#1a2d20","#284733"] },
-    { title:"Early apes", sub:"Miocene apes represent the branch from which African apes and, much later, humans emerged.", display_age:"ca. 18 million years ago", years_ago:18000000, type:"ape lineage", palette:["#12150d","#252d1a","#3d4728"] },
-    { title:"Earliest hominins", sub:"This marks the human lineage after the split from the lineage leading to chimpanzees and bonobos.", display_age:"7 to 6 million years ago", years_ago:6500000, type:"human-line split", palette:["#15120a","#2d2515","#4d3d22"] },
-    { title:"Australopithecus afarensis", sub:"A. afarensis combined habitual bipedalism with retained climbing traits and is one of the clearest early human waypoints.", display_age:"3.85 to 2.95 million years ago", years_ago:3400000, type:"bipedal hominin", palette:["#1a150d","#332a1a","#4d4028"] },
-    { title:"Homo habilis", sub:"Early Homo shows a larger braincase and a more human-like face than australopiths and is closely associated with early stone tool use.", display_age:"2.4 to 1.4 million years ago", years_ago:2000000, type:"genus Homo", palette:["#15100a","#2d2215","#4d3822"] },
-    { title:"Homo erectus", sub:"H. erectus had more modern body proportions, traveled beyond Africa, and represents a major shift toward the human body plan.", display_age:"1.89 Ma to 110 ka", years_ago:1600000, type:"modern-bodied hominin", palette:["#120d0a","#251a15","#3d2d22"] },
-    { title:"Homo sapiens", sub:"Our species emerged in Africa roughly 300,000 years ago and later spread worldwide, carrying cumulative culture, language, art, and technology.", display_age:"at least 300,000 years ago to present", years_ago:300000, type:"our species", palette:["#0f0f15","#1a1a2d","#2d2d47"] },
+    { title:"Alkaline hydrothermal vents", sub:"A leading origin-of-life hypothesis places prebiotic chemistry in porous alkaline vent systems that supplied chemical gradients, mineral surfaces, and compartment-like spaces.", display_age:"~4.1 billion years ago", years_ago:4100000000, img:"/images/path-to-you/01-vents.png" },
+    { title:"Protocell-like compartments", sub:"Before true cells, chemistry may have been concentrated inside mineral pores or primitive membrane compartments that stabilized reactions.", display_age:"~4.0 billion years ago", years_ago:4000000000, img:"/images/path-to-you/02-protocells.png" },
+    { title:"First cells / LUCA-grade microbe", sub:"The last universal common ancestor marks the point after which all known life shares a common biological inheritance.", display_age:"older than 3.9 billion years ago", years_ago:3900000000, img:"/images/path-to-you/03-first-cells.png" },
+    { title:"Cyanobacterial mats", sub:"Oxygenic photosynthesis by cyanobacteria helped transform Earth's atmosphere and oceans.", display_age:"~2.7 billion years ago", years_ago:2700000000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"Great Oxidation Event", sub:"Atmospheric oxygen rose for the first time at planetary scale, opening ecological space for new metabolisms and later complexity.", display_age:"2.4 to 2.2 billion years ago", years_ago:2400000000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"First eukaryotes", sub:"Eukaryotic cells introduced internal compartmentalization and, eventually, the lineage that led to animals, plants, and fungi.", display_age:"~1.8 billion years ago", years_ago:1800000000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"Complex multicellular eukaryotes", sub:"Large multicellular bodies and cellular differentiation emerged long before animals appeared.", display_age:"~1.0 billion years ago", years_ago:1000000000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"Ediacaran animals", sub:"The Ediacaran world preserves the earliest large, complex organisms and the first clear rise of animal-grade ecosystems.", display_age:"~575 million years ago", years_ago:575000000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"Bilaterian animals", sub:"Bilaterian body plans set up the left-right symmetry, front-back axes, and organ systems behind most later animals, including us.", display_age:"~550 million years ago", years_ago:550000000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"Jawless vertebrates", sub:"Early vertebrates established the basic vertebrate body plan: head, braincase, backbone, and sensory systems.", display_age:"about 500 million years ago", years_ago:500000000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"Jawed fishes", sub:"Jaws transformed feeding and predation, and jawed vertebrates became the ancestors of bony fishes, sharks, and eventually tetrapods.", display_age:"~420 million years ago", years_ago:420000000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"Lobe-finned fishes", sub:"Our lineage runs through lobe-finned fishes, whose robust fins provided the anatomical basis for later limbs.", display_age:"~390 million years ago", years_ago:390000000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"Stem tetrapods", sub:"Stem tetrapods combined fish and tetrapod traits, including stronger girdles, mobile neck regions, and limb-like fins.", display_age:"~375 million years ago", years_ago:375000000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"Early tetrapods", sub:"Limbed vertebrates became capable of moving through shallow water and onto land, starting the terrestrial vertebrate story.", display_age:"~365 million years ago", years_ago:365000000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"Amniotes", sub:"Amniotes reproduced away from open water using protected eggs and associated membranes, freeing vertebrates from aquatic breeding.", display_age:"~320 million years ago", years_ago:320000000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"Synapsids", sub:"Synapsids are the amniote branch that ultimately gave rise to mammals, including humans.", display_age:"~300 million years ago", years_ago:300000000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"Cynodonts", sub:"Cynodonts show many mammal-leaning traits, including differentiated teeth and jaw-ear transitions on the path toward true mammals.", display_age:"~240 million years ago", years_ago:240000000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"Early mammals", sub:"The earliest mammals were small but they established the body plan and physiology that would eventually produce primates and humans.", display_age:"225 to 205 million years ago", years_ago:225000000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"Early primates", sub:"Early primates adapted to arboreal life with grasping hands, flexible shoulders, and visual specialization that set the stage for apes and humans.", display_age:"56 to 65 million years ago", years_ago:56000000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"Early apes", sub:"Miocene apes represent the branch from which African apes and, much later, humans emerged.", display_age:"~18 million years ago", years_ago:18000000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"Earliest hominins", sub:"This marks the human lineage after the split from the lineage leading to chimpanzees and bonobos.", display_age:"7 to 6 million years ago", years_ago:6500000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"Australopithecus afarensis", sub:"A. afarensis combined habitual bipedalism with retained climbing traits and is one of the clearest early human waypoints.", display_age:"3.85 to 2.95 million years ago", years_ago:3400000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"Homo habilis", sub:"Early Homo shows a larger braincase and a more human-like face than australopiths and is closely associated with early stone tool use.", display_age:"2.4 to 1.4 million years ago", years_ago:2000000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"Homo erectus", sub:"H. erectus had more modern body proportions, traveled beyond Africa, and represents a major shift toward the human body plan.", display_age:"1.89 Ma to 110 ka", years_ago:1600000, img:"/images/path-to-you/04-cyanobacteria.png" },
+    { title:"Homo sapiens", sub:"Our species emerged in Africa roughly 300,000 years ago and later spread worldwide, carrying cumulative culture, language, art, and technology.", display_age:"at least 300,000 years ago to present", years_ago:300000, img:"/images/path-to-you/04-cyanobacteria.png" },
   ];
-
-  // ── SVG SILHOUETTES (from Lineage) ─────────────────────
-  function makeSilhouette(wp, size) {
-    const s = size;
-    const c = s / 2;
-    const col = wp.palette[2];
-
-    const shapes = {
-      "environmental event": `<circle cx="${c}" cy="${c}" r="${c*0.4}" fill="none" stroke="${col}" stroke-width="1.5" opacity="0.6"/><circle cx="${c}" cy="${c*0.7}" r="${c*0.15}" fill="${col}" opacity="0.3"/><line x1="${c}" y1="${c*0.3}" x2="${c}" y2="${c*1.5}" stroke="${col}" stroke-width="1" opacity="0.4"/><line x1="${c*0.7}" y1="${c*0.5}" x2="${c*0.7}" y2="${c*1.6}" stroke="${col}" stroke-width="0.8" opacity="0.3"/><line x1="${c*1.3}" y1="${c*0.4}" x2="${c*1.3}" y2="${c*1.4}" stroke="${col}" stroke-width="0.8" opacity="0.3"/>`,
-      "precellular transition": `<circle cx="${c}" cy="${c}" r="${c*0.35}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c*0.8}" cy="${c*0.9}" r="${c*0.08}" fill="${col}" opacity="0.3"/><circle cx="${c*1.15}" cy="${c*1.1}" r="${c*0.06}" fill="${col}" opacity="0.25"/>`,
-      "microbial ancestor": `<ellipse cx="${c}" cy="${c}" rx="${c*0.3}" ry="${c*0.2}" fill="${col}" opacity="0.2" stroke="${col}" stroke-width="1" stroke-opacity="0.5"/><circle cx="${c*0.85}" cy="${c}" r="${c*0.05}" fill="${col}" opacity="0.4"/>`,
-      "microbial innovation": `<ellipse cx="${c}" cy="${c*1.1}" rx="${c*0.5}" ry="${c*0.15}" fill="${col}" opacity="0.2"/><ellipse cx="${c}" cy="${c*0.9}" rx="${c*0.45}" ry="${c*0.12}" fill="${col}" opacity="0.15"/><ellipse cx="${c}" cy="${c*0.7}" rx="${c*0.35}" ry="${c*0.1}" fill="${col}" opacity="0.1"/>`,
-      "planetary transition": `<circle cx="${c}" cy="${c}" r="${c*0.45}" fill="none" stroke="${col}" stroke-width="1.5" opacity="0.3"/><path d="M${c*0.3},${c} Q${c},${c*0.5} ${c*1.7},${c}" fill="none" stroke="${col}" stroke-width="1" opacity="0.4"/>`,
-      "cellular transition": `<circle cx="${c}" cy="${c}" r="${c*0.35}" fill="${col}" opacity="0.12" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c}" cy="${c}" r="${c*0.12}" fill="${col}" opacity="0.2" stroke="${col}" stroke-width="0.5" stroke-opacity="0.3"/><circle cx="${c*0.8}" cy="${c*0.85}" r="${c*0.05}" fill="${col}" opacity="0.35"/>`,
-      "multicellularity transition": `<ellipse cx="${c}" cy="${c}" rx="${c*0.15}" ry="${c*0.4}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4" transform="rotate(-10,${c},${c})"/>`,
-      "early animals": `<ellipse cx="${c}" cy="${c}" rx="${c*0.2}" ry="${c*0.4}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><line x1="${c}" y1="${c*0.5}" x2="${c*0.7}" y2="${c*0.3}" stroke="${col}" stroke-width="0.8" opacity="0.3"/>`,
-      "body-plan transition": `<ellipse cx="${c}" cy="${c}" rx="${c*0.4}" ry="${c*0.1}" fill="${col}" opacity="0.2" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/>`,
-      "vertebrate origin": `<ellipse cx="${c}" cy="${c}" rx="${c*0.35}" ry="${c*0.15}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c*0.65}" cy="${c}" r="${c*0.04}" fill="${col}" opacity="0.5"/>`,
-      "vertebrate innovation": `<ellipse cx="${c}" cy="${c}" rx="${c*0.38}" ry="${c*0.18}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1.2" stroke-opacity="0.4"/><path d="M${c*0.6},${c} L${c*0.5},${c*0.92}" stroke="${col}" stroke-width="1" opacity="0.4"/>`,
-      "tetrapod stem": `<ellipse cx="${c}" cy="${c*0.95}" rx="${c*0.35}" ry="${c*0.15}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><line x1="${c*0.75}" y1="${c*1.1}" x2="${c*0.6}" y2="${c*1.3}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><line x1="${c*1.25}" y1="${c*1.1}" x2="${c*1.4}" y2="${c*1.3}" stroke="${col}" stroke-width="1.5" opacity="0.3"/>`,
-      "water-to-land transition": `<ellipse cx="${c}" cy="${c*0.9}" rx="${c*0.35}" ry="${c*0.15}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><line x1="${c*0.7}" y1="${c*1.05}" x2="${c*0.55}" y2="${c*1.3}" stroke="${col}" stroke-width="2" opacity="0.3"/><line x1="${c*1.3}" y1="${c*1.05}" x2="${c*1.45}" y2="${c*1.3}" stroke="${col}" stroke-width="2" opacity="0.3"/>`,
-      "land-capable vertebrate": `<ellipse cx="${c}" cy="${c*0.85}" rx="${c*0.3}" ry="${c*0.15}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><line x1="${c*0.7}" y1="${c}" x2="${c*0.55}" y2="${c*1.25}" stroke="${col}" stroke-width="2" opacity="0.3"/><line x1="${c*1.3}" y1="${c}" x2="${c*1.45}" y2="${c*1.25}" stroke="${col}" stroke-width="2" opacity="0.3"/>`,
-      "reproductive transition": `<ellipse cx="${c}" cy="${c*0.9}" rx="${c*0.2}" ry="${c*0.12}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><line x1="${c*0.85}" y1="${c*1.02}" x2="${c*0.75}" y2="${c*1.2}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><line x1="${c*1.15}" y1="${c*1.02}" x2="${c*1.25}" y2="${c*1.2}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><ellipse cx="${c*1.4}" cy="${c*1.15}" rx="${c*0.06}" ry="${c*0.05}" fill="${col}" opacity="0.2"/>`,
-      "mammal-line ancestor": `<ellipse cx="${c}" cy="${c*0.85}" rx="${c*0.35}" ry="${c*0.18}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1.2" stroke-opacity="0.4"/><path d="M${c*0.65},${c*0.68} Q${c*0.65},${c*0.4} ${c*0.75},${c*0.35} Q${c*1.35},${c*0.35} ${c*1.35},${c*0.68}" fill="none" stroke="${col}" stroke-width="1" opacity="0.3"/>`,
-      "mammalian transition": `<ellipse cx="${c}" cy="${c*0.9}" rx="${c*0.25}" ry="${c*0.15}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c*0.7}" cy="${c*0.78}" r="${c*0.08}" fill="${col}" opacity="0.12" stroke="${col}" stroke-width="0.8" stroke-opacity="0.3"/>`,
-      "true mammals": `<ellipse cx="${c}" cy="${c*0.9}" rx="${c*0.18}" ry="${c*0.1}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c*0.82}" cy="${c*0.82}" r="${c*0.06}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="0.8" stroke-opacity="0.3"/>`,
-      "primate origin": `<ellipse cx="${c}" cy="${c*0.95}" rx="${c*0.15}" ry="${c*0.2}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c}" cy="${c*0.7}" r="${c*0.1}" fill="${col}" opacity="0.12" stroke="${col}" stroke-width="0.8" stroke-opacity="0.3"/><line x1="${c*0.88}" y1="${c*0.85}" x2="${c*0.7}" y2="${c*1}" stroke="${col}" stroke-width="1.2" opacity="0.3"/><line x1="${c*1.12}" y1="${c*0.85}" x2="${c*1.3}" y2="${c*1}" stroke="${col}" stroke-width="1.2" opacity="0.3"/>`,
-      "ape lineage": `<ellipse cx="${c}" cy="${c}" rx="${c*0.18}" ry="${c*0.25}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c}" cy="${c*0.68}" r="${c*0.12}" fill="${col}" opacity="0.12" stroke="${col}" stroke-width="0.8" stroke-opacity="0.3"/><line x1="${c*0.85}" y1="${c*0.85}" x2="${c*0.6}" y2="${c*0.7}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><line x1="${c*1.15}" y1="${c*0.85}" x2="${c*1.4}" y2="${c*0.7}" stroke="${col}" stroke-width="1.5" opacity="0.3"/>`,
-      "human-line split": `<ellipse cx="${c}" cy="${c*1.05}" rx="${c*0.15}" ry="${c*0.22}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><circle cx="${c}" cy="${c*0.72}" r="${c*0.11}" fill="${col}" opacity="0.12" stroke="${col}" stroke-width="0.8" stroke-opacity="0.3"/><line x1="${c*0.87}" y1="${c*0.9}" x2="${c*0.65}" y2="${c*1.15}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><line x1="${c*1.13}" y1="${c*0.9}" x2="${c*1.35}" y2="${c*1.15}" stroke="${col}" stroke-width="1.5" opacity="0.3"/>`,
-      "bipedal hominin": `<line x1="${c}" y1="${c*0.55}" x2="${c}" y2="${c*1.1}" stroke="${col}" stroke-width="2" opacity="0.3"/><circle cx="${c}" cy="${c*0.48}" r="${c*0.1}" fill="${col}" opacity="0.12" stroke="${col}" stroke-width="0.8" stroke-opacity="0.4"/><line x1="${c}" y1="${c*1.1}" x2="${c*0.85}" y2="${c*1.45}" stroke="${col}" stroke-width="1.8" opacity="0.3"/><line x1="${c}" y1="${c*1.1}" x2="${c*1.15}" y2="${c*1.45}" stroke="${col}" stroke-width="1.8" opacity="0.3"/><line x1="${c}" y1="${c*0.7}" x2="${c*0.7}" y2="${c*0.85}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><line x1="${c}" y1="${c*0.7}" x2="${c*1.3}" y2="${c*0.85}" stroke="${col}" stroke-width="1.5" opacity="0.3"/>`,
-      "genus Homo": `<line x1="${c}" y1="${c*0.5}" x2="${c}" y2="${c*1.05}" stroke="${col}" stroke-width="2" opacity="0.35"/><circle cx="${c}" cy="${c*0.42}" r="${c*0.11}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="0.8" stroke-opacity="0.4"/><line x1="${c}" y1="${c*1.05}" x2="${c*0.82}" y2="${c*1.45}" stroke="${col}" stroke-width="2" opacity="0.3"/><line x1="${c}" y1="${c*1.05}" x2="${c*1.18}" y2="${c*1.45}" stroke="${col}" stroke-width="2" opacity="0.3"/><line x1="${c}" y1="${c*0.65}" x2="${c*0.65}" y2="${c*0.8}" stroke="${col}" stroke-width="1.5" opacity="0.3"/><line x1="${c}" y1="${c*0.65}" x2="${c*1.35}" y2="${c*0.8}" stroke="${col}" stroke-width="1.5" opacity="0.3"/>`,
-      "modern-bodied hominin": `<line x1="${c}" y1="${c*0.45}" x2="${c}" y2="${c*1}" stroke="${col}" stroke-width="2.5" opacity="0.35"/><circle cx="${c}" cy="${c*0.37}" r="${c*0.12}" fill="${col}" opacity="0.15" stroke="${col}" stroke-width="1" stroke-opacity="0.4"/><line x1="${c}" y1="${c*1}" x2="${c*0.8}" y2="${c*1.5}" stroke="${col}" stroke-width="2.2" opacity="0.3"/><line x1="${c}" y1="${c*1}" x2="${c*1.2}" y2="${c*1.5}" stroke="${col}" stroke-width="2.2" opacity="0.3"/><line x1="${c}" y1="${c*0.6}" x2="${c*0.6}" y2="${c*0.78}" stroke="${col}" stroke-width="1.8" opacity="0.3"/><line x1="${c}" y1="${c*0.6}" x2="${c*1.4}" y2="${c*0.78}" stroke="${col}" stroke-width="1.8" opacity="0.3"/>`,
-      "our species": `<line x1="${c}" y1="${c*0.42}" x2="${c}" y2="${c*0.98}" stroke="${col}" stroke-width="2.5" opacity="0.4"/><circle cx="${c}" cy="${c*0.33}" r="${c*0.13}" fill="${col}" opacity="0.18" stroke="${col}" stroke-width="1" stroke-opacity="0.5"/><line x1="${c}" y1="${c*0.98}" x2="${c*0.78}" y2="${c*1.5}" stroke="${col}" stroke-width="2.5" opacity="0.35"/><line x1="${c}" y1="${c*0.98}" x2="${c*1.22}" y2="${c*1.5}" stroke="${col}" stroke-width="2.5" opacity="0.35"/><line x1="${c}" y1="${c*0.58}" x2="${c*0.58}" y2="${c*0.75}" stroke="${col}" stroke-width="2" opacity="0.3"/><line x1="${c}" y1="${c*0.58}" x2="${c*1.42}" y2="${c*0.75}" stroke="${col}" stroke-width="2" opacity="0.3"/>`,
-    };
-
-    return shapes[wp.type] || shapes["environmental event"];
-  }
 
   // ── SETUP ──────────────────────────────────────────────
   const scrollEl = document.getElementById('pty-scroll');
@@ -316,8 +280,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     track.appendChild(marker);
   });
 
-  const svgSize = 200;
-
   function formatYears(n) {
     if (n >= 1e9) return (n / 1e9).toFixed(1) + ' billion';
     if (n >= 1e6) return (n / 1e6).toFixed(1) + ' million';
@@ -332,8 +294,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
     const subjectEl = document.createElement('div');
     subjectEl.className = 'pty-subject';
-    const shapes = makeSilhouette(wp, svgSize);
-    subjectEl.innerHTML = `<svg viewBox="0 0 ${svgSize} ${svgSize}" xmlns="http://www.w3.org/2000/svg">${shapes}</svg>`;
+    subjectEl.innerHTML = `<img src="${wp.img}" alt="" />`;
 
     const textEl = document.createElement('div');
     textEl.className = 'pty-slide-text';
@@ -402,49 +363,42 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       yearCounter.textContent = formatYears(displayYears) + ' years ago';
     }
 
-    // Position each slide based on scroll
-    // Slides stay at center (0) until the NEXT slide scrolls in from below to push it out
-    const viewH = window.innerHeight;
+    // Determine which slide is active based on scroll progress
     for (let i = 0; i < slides.length; i++) {
       const slideStart = wpScrollPos[i];
-      const nextStart = wpScrollPos[i + 1] !== undefined ? wpScrollPos[i + 1] : 1;
+      const slideEnd = wpScrollPos[i + 1] !== undefined ? wpScrollPos[i + 1] : 1;
 
-      let yOffset;
-      if (progress < slideStart) {
-        // Haven't reached this slide — fully below
-        yOffset = viewH;
-      } else if (i < slides.length - 1 && progress >= nextStart) {
-        // Next slide has arrived — this one is pushed fully above
-        yOffset = -viewH;
-      } else if (progress >= slideStart && progress < nextStart) {
-        // Active section — slide sits at 0
-        // But as we approach the next section boundary, the NEXT slide
-        // is scrolling in from below, so this one stays put
-        yOffset = 0;
-      } else {
-        yOffset = -viewH;
+      const isActive = progress >= slideStart && progress < slideEnd;
+      const isLast = i === slides.length - 1 && progress >= slideStart;
+      const visible = isActive || isLast;
+
+      // Image: fade in/out
+      const subjectEl = slides[i].querySelector('.pty-subject');
+      if (subjectEl) {
+        subjectEl.style.transition = 'opacity 1s ease-in-out';
+        subjectEl.style.opacity = visible ? 1 : 0;
       }
 
-      slides[i].style.transform = `translateY(${yOffset}px)`;
-
-      // The incoming next slide should scroll proportionally from below
-      if (i > 0) {
-        const prevEnd = wpScrollPos[i]; // when this slide's section starts
-        const prevStart = wpScrollPos[i - 1];
-        // During the previous section, this slide scrolls in from below
-        if (progress >= prevStart && progress < prevEnd) {
-          const frac = (progress - prevStart) / (prevEnd - prevStart);
-          // Slide in from bottom: starts at viewH, ends at 0
-          yOffset = viewH * (1 - frac);
-          slides[i].style.transform = `translateY(${yOffset}px)`;
-        }
-      }
-
-      // Set text color on each slide
+      // Title: fade in/out with slight vertical movement
       const title = slides[i].querySelector('.pty-slide-title');
+      if (title) {
+        title.style.transition = 'opacity 1s ease-in-out 0.3s, transform 1s ease-in-out 0.3s';
+        title.style.opacity = visible ? 1 : 0;
+        title.style.transform = visible ? 'translateY(0)' : 'translateY(12px)';
+        title.style.color = textColor;
+      }
+
+      // Sub text: fade in/out with slight vertical movement, staggered
       const sub = slides[i].querySelector('.pty-slide-sub');
-      if (title) title.style.color = textColor;
-      if (sub) sub.style.color = textColor;
+      if (sub) {
+        sub.style.transition = 'opacity 1s ease-in-out 0.6s, transform 1s ease-in-out 0.6s';
+        sub.style.opacity = visible ? 1 : 0;
+        sub.style.transform = visible ? 'translateY(0)' : 'translateY(12px)';
+        sub.style.color = textColor;
+      }
+
+      // Show/hide the slide itself
+      slides[i].style.display = visible ? 'flex' : 'none';
     }
   }
 
