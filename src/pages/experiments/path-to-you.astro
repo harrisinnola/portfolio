@@ -7,13 +7,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     <div class="pty-scroll" id="pty-scroll"></div>
 
     <div class="pty-fixed" id="pty-fixed">
-      <div class="pty-image" id="pty-image">
-        <div class="pty-subject" id="pty-subject"></div>
-      </div>
-      <div class="pty-text" id="pty-text">
-        <h2 class="pty-title" id="pty-title"></h2>
-        <p class="pty-sub" id="pty-sub"></p>
-      </div>
+      <div class="pty-content-area" id="pty-content-area"></div>
       <div class="pty-progress-bar">
         <div class="pty-progress-fill" id="pty-progress-fill"></div>
       </div>
@@ -58,20 +52,32 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     z-index: 1;
   }
 
-  .pty-image {
+  .pty-content-area {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .pty-slide {
+    position: absolute;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    will-change: transform;
+  }
+
+  .pty-subject {
+    width: 300px;
+    height: 300px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 2rem;
-    transition: opacity 0.5s ease, transform 0.5s ease;
-  }
-
-  .pty-subject {
-    width: 200px;
-    height: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   .pty-subject svg {
@@ -79,26 +85,23 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     height: 100%;
   }
 
-  .pty-text {
+  .pty-slide-text {
     text-align: center;
     max-width: 500px;
     padding: 0 2rem;
-    transition: opacity 0.4s ease, transform 0.4s ease;
   }
 
-  .pty-title {
+  .pty-slide-title {
     font-size: 2rem;
     font-weight: 200;
     letter-spacing: 0.06em;
     margin-bottom: 0.5rem;
-    transition: color 0.5s ease;
   }
 
-  .pty-sub {
+  .pty-slide-sub {
     font-size: 1rem;
     font-weight: 200;
     line-height: 1.6;
-    transition: color 0.5s ease;
     margin: 0;
   }
 
@@ -147,7 +150,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     left: 1rem;
     top: 3.5rem;
     bottom: 3rem;
-    width: 3px;
+    width: 9px;
     z-index: 10;
     pointer-events: none;
   }
@@ -170,8 +173,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   .pty-timeline-marker {
     position: absolute;
-    left: -3px;
-    width: 9px;
+    left: 0;
+    width: 100%;
     height: 2px;
     background: #c8a800;
     pointer-events: none;
@@ -179,7 +182,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   .pty-timeline-cursor {
     position: absolute;
-    left: -2px;
+    left: 50%;
+    transform: translateX(-50%);
     width: 7px;
     height: 7px;
     border-radius: 50%;
@@ -189,8 +193,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   }
 
   @media (max-width: 640px) {
-    .pty-title { font-size: 1.5rem; }
-    .pty-sub { font-size: 0.875rem; }
+    .pty-slide-title { font-size: 1.5rem; }
+    .pty-slide-sub { font-size: 0.875rem; }
+    .pty-subject { width: 200px; height: 200px; }
     .pty-timeline-bar { left: 0.5rem; }
     .pty-year-counter { font-size: 1.5rem; top: 1rem; }
   }
@@ -268,11 +273,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   // ── SETUP ──────────────────────────────────────────────
   const scrollEl = document.getElementById('pty-scroll');
-  const subject = document.getElementById('pty-subject');
-  const titleEl = document.getElementById('pty-title');
-  const subEl = document.getElementById('pty-sub');
-  const imageEl = document.getElementById('pty-image');
-  const textEl = document.getElementById('pty-text');
+  const contentArea = document.getElementById('pty-content-area');
   const progressFill = document.getElementById('pty-progress-fill');
   const backEl = document.getElementById('pty-back');
   const ptyEl = document.getElementById('pty');
@@ -315,9 +316,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     track.appendChild(marker);
   });
 
-  let currentWaypoint = -1;
-  let isTransitioning = false;
-
   const svgSize = 200;
 
   function formatYears(n) {
@@ -327,38 +325,25 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     return String(Math.round(n));
   }
 
-  function renderSubject(wp) {
+  // Pre-build all slides
+  const slides = waypoints.map((wp) => {
+    const slide = document.createElement('div');
+    slide.className = 'pty-slide';
+
+    const subjectEl = document.createElement('div');
+    subjectEl.className = 'pty-subject';
     const shapes = makeSilhouette(wp, svgSize);
-    subject.innerHTML = `<svg viewBox="0 0 ${svgSize} ${svgSize}" xmlns="http://www.w3.org/2000/svg">${shapes}</svg>`;
-  }
+    subjectEl.innerHTML = `<svg viewBox="0 0 ${svgSize} ${svgSize}" xmlns="http://www.w3.org/2000/svg">${shapes}</svg>`;
 
-  function showWaypoint(index) {
-    if (index === currentWaypoint || isTransitioning) return;
-    isTransitioning = true;
+    const textEl = document.createElement('div');
+    textEl.className = 'pty-slide-text';
+    textEl.innerHTML = `<h2 class="pty-slide-title">${wp.title}</h2><p class="pty-slide-sub">${wp.display_age} — ${wp.sub}</p>`;
 
-    const wp = waypoints[index];
-
-    // Fade out
-    imageEl.style.opacity = '0';
-    imageEl.style.transform = 'translateY(10px)';
-    textEl.style.opacity = '0';
-    textEl.style.transform = 'translateY(10px)';
-
-    setTimeout(() => {
-      renderSubject(wp);
-      titleEl.textContent = wp.title;
-      subEl.textContent = wp.display_age + ' — ' + wp.sub;
-
-      // Fade in
-      imageEl.style.opacity = '1';
-      imageEl.style.transform = 'translateY(0)';
-      textEl.style.opacity = '1';
-      textEl.style.transform = 'translateY(0)';
-
-      currentWaypoint = index;
-      isTransitioning = false;
-    }, 350);
-  }
+    slide.appendChild(subjectEl);
+    slide.appendChild(textEl);
+    contentArea.appendChild(slide);
+    return slide;
+  });
 
   function lerp(a, b, t) {
     return a + (b - a) * t;
@@ -373,12 +358,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const bg = Math.round(lerp(0, 255, progress));
     ptyEl.style.background = `rgb(${bg}, ${bg}, ${bg})`;
 
-    // Text color: white to black
+    // Text color
     const textBrightness = bg > 140 ? 0 : 255;
     const textColor = `rgb(${textBrightness}, ${textBrightness}, ${textBrightness})`;
-    const mutedColor = bg > 140 ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)';
-    titleEl.style.color = textColor;
-    subEl.style.color = textColor;
     backEl.style.color = textColor;
     yearCounter.style.color = textColor;
 
@@ -386,11 +368,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     progressFill.style.width = (progress * 100) + '%';
     progressFill.style.background = bg > 140 ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)';
 
-    // Timeline cursor (follows scroll linearly down the bar)
+    // Timeline cursor
     timelineCursor.style.top = (progress * 100) + '%';
     timelineCursor.style.background = textColor;
 
-    // Find which waypoint section we're in based on proportional positions
+    // Find which waypoint section we're in
     let waypointIndex = 0;
     for (let i = waypoints.length - 1; i >= 0; i--) {
       if (progress >= wpScrollPos[i]) {
@@ -406,7 +388,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       ? (progress - sectionStart) / (sectionEnd - sectionStart)
       : 0;
 
-    // Year counter — interpolate within the current section
+    // Year counter
     const currentYears = waypoints[waypointIndex].years_ago;
     const nextYears = waypointIndex < waypoints.length - 1
       ? waypoints[waypointIndex + 1].years_ago
@@ -420,22 +402,53 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       yearCounter.textContent = formatYears(displayYears) + ' years ago';
     }
 
-    showWaypoint(waypointIndex);
+    // Position each slide based on scroll
+    // Slides stay at center (0) until the NEXT slide scrolls in from below to push it out
+    const viewH = window.innerHeight;
+    for (let i = 0; i < slides.length; i++) {
+      const slideStart = wpScrollPos[i];
+      const nextStart = wpScrollPos[i + 1] !== undefined ? wpScrollPos[i + 1] : 1;
+
+      let yOffset;
+      if (progress < slideStart) {
+        // Haven't reached this slide — fully below
+        yOffset = viewH;
+      } else if (i < slides.length - 1 && progress >= nextStart) {
+        // Next slide has arrived — this one is pushed fully above
+        yOffset = -viewH;
+      } else if (progress >= slideStart && progress < nextStart) {
+        // Active section — slide sits at 0
+        // But as we approach the next section boundary, the NEXT slide
+        // is scrolling in from below, so this one stays put
+        yOffset = 0;
+      } else {
+        yOffset = -viewH;
+      }
+
+      slides[i].style.transform = `translateY(${yOffset}px)`;
+
+      // The incoming next slide should scroll proportionally from below
+      if (i > 0) {
+        const prevEnd = wpScrollPos[i]; // when this slide's section starts
+        const prevStart = wpScrollPos[i - 1];
+        // During the previous section, this slide scrolls in from below
+        if (progress >= prevStart && progress < prevEnd) {
+          const frac = (progress - prevStart) / (prevEnd - prevStart);
+          // Slide in from bottom: starts at viewH, ends at 0
+          yOffset = viewH * (1 - frac);
+          slides[i].style.transform = `translateY(${yOffset}px)`;
+        }
+      }
+
+      // Set text color on each slide
+      const title = slides[i].querySelector('.pty-slide-title');
+      const sub = slides[i].querySelector('.pty-slide-sub');
+      if (title) title.style.color = textColor;
+      if (sub) sub.style.color = textColor;
+    }
   }
 
-  // Initialize first waypoint immediately (no fade)
-  currentWaypoint = 0;
-  const firstWp = waypoints[0];
-  renderSubject(firstWp);
-  titleEl.textContent = firstWp.title;
-  subEl.textContent = firstWp.display_age + ' — ' + firstWp.sub;
-  titleEl.style.color = '#fff';
-  subEl.style.color = '#fff';
-  backEl.style.color = 'rgba(255,255,255,0.35)';
-  yearCounter.style.color = 'rgba(255,255,255,0.5)';
-  imageEl.style.opacity = '1';
-  textEl.style.opacity = '1';
-
   scrollEl.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update);
   update();
 </script>
