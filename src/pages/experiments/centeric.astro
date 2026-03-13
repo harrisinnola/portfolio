@@ -186,22 +186,31 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   .ce-toggle-panel {
     margin-top: 0.4rem;
-    background: rgba(0, 0, 0, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 0.5rem;
     padding: 0.4rem 0;
-    min-width: 140px;
+    min-width: 150px;
+    overflow: hidden;
+    transform-origin: top right;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    opacity: 1;
+    transform: scaleY(1);
   }
 
   .ce-toggle-panel.hidden {
-    display: none;
+    opacity: 0;
+    transform: scaleY(0);
+    pointer-events: none;
   }
 
   .ce-toggle-row {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.3rem 0.75rem;
+    padding: 0.35rem 0.75rem;
     cursor: pointer;
     transition: background 0.15s;
   }
@@ -210,10 +219,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     background: rgba(255, 255, 255, 0.05);
   }
 
+  .ce-toggle-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
   .ce-toggle-row label {
     font-size: 0.75rem;
     font-weight: 200;
-    color: rgba(255, 255, 255, 0.6);
     cursor: pointer;
     flex: 1;
   }
@@ -222,21 +237,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     appearance: none;
     width: 12px;
     height: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 2px;
     background: transparent;
     cursor: pointer;
     position: relative;
+    flex-shrink: 0;
   }
 
   .ce-toggle-row input[type="checkbox"]:checked {
     background: rgba(255, 255, 255, 0.5);
-  }
-
-  .ce-toggle-sep {
-    height: 1px;
-    background: rgba(255, 255, 255, 0.08);
-    margin: 0.25rem 0.75rem;
   }
 
   @media (max-width: 640px) {
@@ -411,6 +421,25 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   const PLANETS = ['Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune'] as const;
   const BODIES = ['Sun', 'Moon', ...PLANETS] as const;
 
+  // Approximate order from Sun (used for brightness — lower index = nearer)
+  const DISTANCE_ORDER: Record<string, number> = {
+    Moon: 0, Sun: 0, Mercury: 1, Venus: 2, Mars: 3,
+    Jupiter: 4, Saturn: 5, Uranus: 6, Neptune: 7,
+  };
+
+  // Apparent color of each body as a point of light
+  const BODY_COLOR: Record<string, string> = {
+    Sun: '255, 220, 150',     // warm yellow-white
+    Moon: '210, 210, 200',    // pale silver
+    Mercury: '180, 175, 165', // dull grey-white
+    Venus: '255, 248, 220',   // brilliant white-yellow
+    Mars: '220, 120, 80',     // orange-red
+    Jupiter: '235, 215, 180', // creamy tan
+    Saturn: '230, 210, 160',  // pale gold
+    Uranus: '180, 220, 230',  // faint blue-green
+    Neptune: '130, 160, 220', // soft blue
+  };
+
   // Visibility toggles: paths only (bodies always shown)
   const pathVisible: Record<string, boolean> = {};
   for (const name of BODIES) {
@@ -421,20 +450,31 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   function buildTogglePanel() {
     togglePanel.innerHTML = '';
     for (const name of BODIES) {
+      if (name === 'Sun') continue;
+      const col = BODY_COLOR[name] ?? '255, 255, 255';
+
       const row = document.createElement('div');
       row.className = 'ce-toggle-row';
+
+      const dot = document.createElement('span');
+      dot.className = 'ce-toggle-dot';
+      dot.style.background = `rgb(${col})`;
+
+      const label = document.createElement('label');
+      label.textContent = name;
+      label.style.color = `rgba(${col}, 0.7)`;
 
       const check = document.createElement('input');
       check.type = 'checkbox';
       check.checked = pathVisible[name];
+      check.style.borderColor = `rgba(${col}, 0.3)`;
       check.addEventListener('change', () => { pathVisible[name] = check.checked; render(); });
 
-      const label = document.createElement('label');
-      label.textContent = name;
       label.addEventListener('click', (e) => { e.preventDefault(); check.checked = !check.checked; pathVisible[name] = check.checked; render(); });
 
-      row.appendChild(check);
+      row.appendChild(dot);
       row.appendChild(label);
+      row.appendChild(check);
       togglePanel.appendChild(row);
     }
   }
@@ -447,19 +487,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   interface TrailPoint { az: number; alt: number; }
 
-  // Approximate order from Sun (used for brightness — lower index = nearer)
-  const DISTANCE_ORDER: Record<string, number> = {
-    Moon: 0, Sun: 0, Mercury: 1, Venus: 2, Mars: 3,
-    Jupiter: 4, Saturn: 5, Uranus: 6, Neptune: 7,
-  };
-
   interface BodyData {
     name: string;
     az: number;
     alt: number;
     trail: TrailPoint[];
     isMoon: boolean;
-    trailAlpha: number; // brightness based on distance
+    trailAlpha: number;
+    color: string; // r, g, b
   }
 
   let bodyData: BodyData[] = [];
@@ -509,16 +544,47 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       const period = ORBITAL_PERIODS[name] ?? 365;
       const steps = 120;
 
-      if (isMoon || isSun) {
-        // Moon: sample over one lunar orbit
-        // Sun: sample over one year (its apparent path = ecliptic)
-        const trailPeriod = isSun ? 365.25 : period;
-        for (let i = 0; i <= steps; i++) {
-          const offsetDays = (i / steps) * trailPeriod;
-          const t = Astronomy.MakeTime(new Date(Date.now() + offsetDays * 86400000));
-          const teq = Astronomy.Equator(name, t, observer, true, true);
-          const thor = Astronomy.Horizon(now, observer, teq.ra, teq.dec, 'normal');
-          trail.push({ az: thor.azimuth, alt: thor.altitude });
+      if (isSun) {
+        // Sun has no orbital trail
+      } else if (isMoon) {
+        if (isMoon) {
+          // Moon trail: use ecliptic but shifted so it passes through the Moon.
+          // Sample the Sun's RA/Dec over a year, find the point closest in RA
+          // to the Moon, compute the dec offset there, and apply uniformly.
+          const moonEq = Astronomy.Equator('Moon', now, observer, true, true);
+
+          // First pass: collect ecliptic points and find closest RA to Moon
+          const eclipticPts: { ra: number; dec: number }[] = [];
+          for (let i = 0; i <= steps; i++) {
+            const offsetDays = (i / steps) * 365.25;
+            const t = Astronomy.MakeTime(new Date(Date.now() + offsetDays * 86400000));
+            const teq = Astronomy.Equator('Sun', t, observer, true, true);
+            eclipticPts.push({ ra: teq.ra, dec: teq.dec });
+          }
+
+          // Find ecliptic point with closest RA to Moon
+          let closestIdx = 0;
+          let closestRaDiff = Infinity;
+          for (let i = 0; i < eclipticPts.length; i++) {
+            let diff = Math.abs(eclipticPts[i].ra - moonEq.ra);
+            if (diff > 12) diff = 24 - diff; // wrap around 24h
+            if (diff < closestRaDiff) { closestRaDiff = diff; closestIdx = i; }
+          }
+          const decOffset = moonEq.dec - eclipticPts[closestIdx].dec;
+
+          for (let i = 0; i < eclipticPts.length; i++) {
+            const thor = Astronomy.Horizon(now, observer, eclipticPts[i].ra, eclipticPts[i].dec + decOffset, 'normal');
+            trail.push({ az: thor.azimuth, alt: thor.altitude });
+          }
+        } else {
+          // Sun: trace the ecliptic over one year
+          for (let i = 0; i <= steps; i++) {
+            const offsetDays = (i / steps) * 365.25;
+            const t = Astronomy.MakeTime(new Date(Date.now() + offsetDays * 86400000));
+            const teq = Astronomy.Equator('Sun', t, observer, true, true);
+            const thor = Astronomy.Horizon(now, observer, teq.ra, teq.dec, 'normal');
+            trail.push({ az: thor.azimuth, alt: thor.altitude });
+          }
         }
       } else {
         // Planets: show the heliocentric orbital ellipse as seen from Earth's current position.
@@ -546,7 +612,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       const distIdx = DISTANCE_ORDER[name] ?? 4;
       const trailAlpha = 0.35 - distIdx * 0.035; // Moon=0.35, Neptune=0.07
 
-      bodyData.push({ name, az: hor.azimuth, alt: hor.altitude, trail, isMoon, trailAlpha });
+      const color = BODY_COLOR[name] ?? '255, 255, 255';
+      bodyData.push({ name, az: hor.azimuth, alt: hor.altitude, trail, isMoon, trailAlpha, color });
     }
   }
 
@@ -666,50 +733,69 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const trail = bd.trail;
     if (trail.length < 2) return;
 
-    // Nested chevrons: thick strokes, spaced apart like  › › › › ›
-    const chevronHalfW = 6;  // half-width perpendicular to path
-    const chevronDepth = 8;  // how far back the arms go from tip
-    const chevronSpacing = 14; // distance between each chevron tip
-    const strokeW = 5;       // thick lines
+    const chevronHalfW = 4;
+    const chevronDepth = 6;
+    const chevronSpacing = 1.2;
+    const strokeW = 1.5;
     const alpha = bd.trailAlpha;
 
-    let distAccum = 0;
+    // Pre-compute cumulative angular distance along the trail (in degrees).
+    // This anchors chevron placement to the trail geometry so they don't
+    // shift when panning the view.
+    const cumDist: number[] = [0];
+    for (let i = 1; i < trail.length; i++) {
+      let dAz = trail[i].az - trail[i - 1].az;
+      if (dAz > 180) dAz -= 360;
+      if (dAz < -180) dAz += 360;
+      const dAlt = trail[i].alt - trail[i - 1].alt;
+      const angDist = Math.sqrt(dAz * dAz + dAlt * dAlt);
+      cumDist.push(cumDist[i - 1] + angDist);
+    }
 
-    // Collect projected screen points
+    // Scale: convert angular distance to a stable pixel-like spacing
+    const totalAng = cumDist[cumDist.length - 1];
+    if (totalAng < 0.01) return;
+
+    // Project all points
     const projected: { x: number; y: number; visible: boolean }[] = [];
     for (let i = 0; i < trail.length; i++) {
       projected.push(projectToScreen(trail[i].az, trail[i].alt));
     }
 
+    // Walk segments and place chevrons at fixed angular intervals
     for (let i = 1; i < projected.length; i++) {
       const p0 = projected[i - 1];
       const p1 = projected[i];
-
-      if (!p0.visible && !p1.visible) continue;
 
       const dx = p1.x - p0.x;
       const dy = p1.y - p0.y;
       const segLen = Math.hypot(dx, dy);
 
-      if (segLen > 300 || segLen < 0.5) { distAccum = 0; continue; }
+      if (segLen > 300 || segLen < 0.5) continue;
+      if (!p0.visible && !p1.visible) continue;
 
       const nx = dx / segLen;
       const ny = dy / segLen;
-      // Perpendicular
       const px = -ny;
       const py = nx;
 
-      distAccum += segLen;
+      const angStart = cumDist[i - 1];
+      const angEnd = cumDist[i];
+      const angLen = angEnd - angStart;
+      if (angLen < 0.001) continue;
 
-      while (distAccum >= chevronSpacing) {
-        distAccum -= chevronSpacing;
-        const t = 1 - distAccum / segLen;
-        if (t < 0 || t > 1) break;
-        const tipX = p0.x + dx * t;
-        const tipY = p0.y + dy * t;
+      // Find first chevron in this segment
+      const firstChevIdx = Math.ceil(angStart / chevronSpacing);
+      const lastChevIdx = Math.floor(angEnd / chevronSpacing);
+
+      for (let ci = firstChevIdx; ci <= lastChevIdx; ci++) {
+        const angPos = ci * chevronSpacing;
+        const frac = (angPos - angStart) / angLen;
+
+        const tipX = p0.x + dx * frac;
+        const tipY = p0.y + dy * frac;
 
         if (tipX > -20 && tipX < W + 20 && tipY > -20 && tipY < H + 20) {
-          // Back center of the chevron
           const backX = tipX - nx * chevronDepth;
           const backY = tipY - ny * chevronDepth;
 
@@ -717,7 +803,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           ctx.moveTo(backX + px * chevronHalfW, backY + py * chevronHalfW);
           ctx.lineTo(tipX, tipY);
           ctx.lineTo(backX - px * chevronHalfW, backY - py * chevronHalfW);
-          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+          ctx.strokeStyle = `rgba(${bd.color}, ${alpha})`;
           ctx.lineWidth = strokeW;
           ctx.lineJoin = 'round';
           ctx.lineCap = 'round';
@@ -727,19 +813,36 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     }
   }
 
+  // Apparent angular diameter in degrees → pixel radius
+  function angularToPixels(degrees: number): number {
+    const f = 1 / Math.tan(FOV / 2);
+    return (degrees / 2) * (Math.PI / 180) * f * (H / 2);
+  }
+
   function drawBody(bd: BodyData) {
     const p = projectToScreen(bd.az, bd.alt);
     if (!p.visible) return;
 
-    const isSun = bd.name === 'Sun';
-    const r = isSun ? 18 : 10;
+    const col = BODY_COLOR[bd.name] ?? '255, 255, 255';
 
-    if (bd.isMoon) {
-      drawMoon(p.x, p.y, r);
+    const isSun = bd.name === 'Sun';
+    const isMoonBody = bd.name === 'Moon';
+    const sunMoonR = Math.max(8, angularToPixels(0.53));
+    let r: number;
+    if (isSun || isMoonBody) {
+      r = sunMoonR;
+    } else {
+      r = Math.max(3, sunMoonR / 4);
+    }
+
+    if (isMoonBody) {
+      drawMoon(p.x, p.y, r, col);
     } else {
       ctx.beginPath();
       ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-      ctx.strokeStyle = isSun ? 'rgba(255, 220, 150, 0.3)' : 'rgba(255, 255, 255, 0.3)';
+      ctx.fillStyle = '#000';
+      ctx.fill();
+      ctx.strokeStyle = `rgba(${col}, 0.3)`;
       ctx.lineWidth = 1;
       ctx.stroke();
     }
@@ -751,18 +854,18 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     if (labelAlpha > 0.01) {
       ctx.font = '200 0.75rem Outfit, system-ui, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillStyle = `rgba(255, 255, 255, ${labelAlpha * 0.7})`;
+      ctx.fillStyle = `rgba(${col}, ${labelAlpha * 0.7})`;
       ctx.fillText(bd.name, p.x, p.y - r - 8);
     }
   }
 
-  function drawMoon(x: number, y: number, r: number) {
+  function drawMoon(x: number, y: number, r: number, col: string) {
     // Dark base
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(60, 60, 60, 0.9)';
+    ctx.fillStyle = '#000';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.strokeStyle = `rgba(${col}, 0.3)`;
     ctx.lineWidth = 1;
     ctx.stroke();
 
@@ -786,7 +889,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       ctx.ellipse(x, y, Math.abs(tx), r, 0, -Math.PI / 2, Math.PI / 2, phase > 270);
     }
     ctx.closePath();
-    ctx.fillStyle = 'rgba(210, 210, 200, 0.9)';
+    ctx.fillStyle = `rgba(${col}, 0.9)`;
     ctx.fill();
     ctx.restore();
   }
