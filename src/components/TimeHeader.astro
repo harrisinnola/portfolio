@@ -12,7 +12,16 @@ const initialClass = isHome ? 'time-header time-header--hero-initial' : 'time-he
       data-size={size}
     ></canvas>
   </a>
-  <p class="time-header__legend"><span style="color:#a90b07">second </span><span class="time-header__legend-sep"></span><span style="color:#a90b07">minute </span><span class="time-header__legend-sep"> </span><span style="color:#ae1a17">hour </span><span class="time-header__legend-sep"> </span><span style="color:#b93936">day </span><span class="time-header__legend-sep"> </span><span style="color:#c45754">week </span><span class="time-header__legend-sep"> </span><span style="color:#cf7673">month </span><span class="time-header__legend-sep"> </span><span style="color:#d99493">year </span><span class="time-header__legend-sep"> </span><span style="color:#e4b3b1">lifespan</span></p>
+  <ul class="time-header__legend">
+    <li style="color:#a90b07">second</li>
+    <li style="color:#a90b07">minute</li>
+    <li style="color:#ae1a17">hour</li>
+    <li style="color:#b93936">day</li>
+    <li style="color:#c45754">week</li>
+    <li style="color:#cf7673">month</li>
+    <li style="color:#d99493">year</li>
+    <li style="color:#e4b3b1">lifespan</li>
+  </ul>
 </div>
 
 <!-- Inline script runs synchronously before paint to trigger the fade-in -->
@@ -92,11 +101,12 @@ const initialClass = isHome ? 'time-header time-header--hero-initial' : 'time-he
     transition: opacity 0.6s ease, transform 0.6s ease;
     pointer-events: none;
     margin: 0;
-    white-space: nowrap;
-  }
-
-  .time-header__legend-sep {
-    color: var(--color-border);
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.05rem;
   }
 
   .time-header--hero .time-header__legend,
